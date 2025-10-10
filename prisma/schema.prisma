@@ -1,0 +1,332 @@
+// Celeste Hardlist Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum GmColor {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum GmTier {
+  GM1
+  GM2
+  GM3
+}
+
+enum RunType {
+  FULL_CLEAR_VIDEO
+  FULL_CLEAR
+  CLEAR_VIDEO
+  CLEAR
+  FULL_CLEAR_GB
+  CLEAR_GB
+  CREATOR_CLEAR
+  ALL_DEATHLESS_SEGMENTS
+  UNKNOWN
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  DISPUTED
+}
+
+enum UserRole {
+  USER
+  VERIFIER
+  MOD
+  ADMIN
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProposalType {
+  MAP_DIFFICULTY
+  ADD_MAP
+  CHANGE_RULE
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED_VETOED
+  REJECTED_VOTES
+}
+
+enum VoteType {
+  YES
+  NO
+  ABSTAIN
+}
+
+// Models
+model Player {
+  id            String        @id @default(cuid())
+  handle        String        @unique
+  youtubeUrl    String?
+  twitchUrl     String?
+  discordHandle String?
+  bio           String?       @db.Text
+  userId        String?       @unique
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  runs          Run[]
+  claims        PlayerClaim[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([handle])
+  @@index([userId])
+}
+
+model CreatorProfile {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  maps      Map[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Map {
+  id              String          @id @default(cuid())
+  slug            String          @unique
+  name            String          @unique
+  creatorId       String
+  creator         CreatorProfile  @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  stars           Int?
+  gmColor         GmColor?
+  gmTier          GmTier?
+  lowDeathRecord  Int?
+  canonicalVideoUrl String?
+  tags            Json            @default("[]")
+  runs            Run[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([slug])
+  @@index([name])
+  @@index([creatorId])
+}
+
+model Run {
+  id                  String               @id @default(cuid())
+  mapId               String
+  map                 Map                  @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  playerId            String
+  player              Player               @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  type                RunType
+  evidenceUrls        String[]
+  submitterNotes      String?              @db.Text
+  deaths              Int?
+  verifiedStatus      VerificationStatus   @default(PENDING)
+  submittedById       String?
+  submittedBy         User?                @relation(fields: [submittedById], references: [id], onDelete: SetNull)
+  verificationActions VerificationAction[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@unique([mapId, playerId, type])
+  @@index([mapId])
+  @@index([playerId])
+  @@index([type])
+  @@index([verifiedStatus])
+  @@index([submittedById])
+}
+
+model Snapshot {
+  id          String   @id @default(cuid())
+  capturedAt  DateTime @default(now())
+  sourceUrl   String
+  sha256      String   @unique
+  bytes       Int
+  path        String
+  createdAt   DateTime @default(now())
+
+  @@index([sha256])
+  @@index([capturedAt])
+}
+
+// Authentication Models
+model User {
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String?              @unique
+  emailVerified       DateTime?
+  image               String?
+  role                UserRole             @default(USER)
+  discordId           String?              @unique
+  discordUsername     String?
+  accounts            Account[]
+  sessions            Session[]
+  claimedPlayer       Player?
+  submittedRuns       Run[]
+  verificationActions VerificationAction[]
+  createdClaims       PlayerClaim[]
+  notifications       Notification[]
+  createdProposals    Proposal[]           @relation("ProposalCreator")
+  closedProposals     Proposal[]           @relation("ProposalCloser")
+  proposalVotes       ProposalVote[]
+  proposalComments    ProposalComment[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([email])
+  @@index([discordId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PlayerClaim {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playerId    String
+  player      Player      @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  status      ClaimStatus @default(PENDING)
+  claimToken  String      @unique @default(cuid())
+  approvedBy  String?
+  rejectedBy  String?
+  reason      String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([playerId])
+  @@index([status])
+  @@index([claimToken])
+}
+
+model VerificationAction {
+  id         String   @id @default(cuid())
+  runId      String
+  run        Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  verifierId String?
+  verifier   User?    @relation(fields: [verifierId], references: [id], onDelete: Cascade)
+  action     String   // "VERIFY", "REJECT", "REQUEST_CHANGES", "UPDATE"
+  reason     String?  @db.Text
+  note       String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([runId])
+  @@index([verifierId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "RUN_VERIFIED", "RUN_REJECTED", "RUN_CHANGES_REQUESTED", "CLAIM_APPROVED", "CLAIM_REJECTED"
+  title     String
+  message   String   @db.Text
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+// Proposal System Models
+model Proposal {
+  id           String         @id @default(cuid())
+  createdById  String
+  createdBy    User           @relation("ProposalCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  type         ProposalType
+  status       ProposalStatus @default(PENDING)
+  title        String
+  description  String         @db.Text
+  proposalData Json           // Type-specific data (mapId, stars, etc.)
+  closedById   String?
+  closedBy     User?          @relation("ProposalCloser", fields: [closedById], references: [id], onDelete: SetNull)
+  closedReason String?        @db.Text
+  closedAt     DateTime?
+  votes        ProposalVote[]
+  comments     ProposalComment[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([createdById])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ProposalVote {
+  id             String   @id @default(cuid())
+  proposalId     String
+  proposal       Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vote           VoteType
+  hasCleared     Boolean  @default(false)
+  forceHighlight Boolean  @default(false)
+  reasoning      String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([proposalId, userId])
+  @@index([proposalId])
+  @@index([userId])
+}
+
+model ProposalComment {
+  id         String            @id @default(cuid())
+  proposalId String
+  proposal   Proposal          @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId   String?
+  parent     ProposalComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies    ProposalComment[] @relation("CommentReplies")
+  content    String            @db.Text
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([proposalId])
+  @@index([userId])
+  @@index([parentId])
+  @@index([createdAt])
+}

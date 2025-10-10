@@ -1,0 +1,69 @@
+/* DARK PROFESSIONAL THEME - Elegant and modern */
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #e5e5e5;
+  --primary: #00d4ff;
+  --secondary: #00b4d8;
+  --accent: #0096c7;
+  --card-bg: #1a1a1a;
+  --border: #2a2a2a;
+  --hover: #2a2a2a;
+  
+  /* GM tier colors */
+  --color-gm-green: #06d6a0;
+  --color-gm-yellow: #ffd60a;
+  --color-gm-red: #ef476f;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}
+
+/* Override backgrounds */
+.bg-white,
+.dark\:bg-gray-800 {
+  background-color: var(--card-bg) !important;
+}
+
+.bg-gradient-to-r {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+}
+
+.bg-clip-text {
+  background: linear-gradient(135deg, var(--primary), var(--accent)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Card styling */
+.rounded-lg {
+  border: 1px solid var(--border);
+}
+
+.shadow-lg,
+.shadow-md {
+  box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1) !important;
+}
+

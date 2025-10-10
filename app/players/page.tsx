@@ -1,0 +1,43 @@
+import { prisma } from '@/lib/prisma'
+import PlayersClient from '@/components/PlayersClient'
+
+export const dynamic = 'force-dynamic'
+
+export default async function PlayersPage() {
+  const pageSize = 50
+  
+  // Load first page of players with limited run data for performance
+  // Note: We fetch all players to sort by run count, then take first page
+  // This is necessary because Prisma doesn't support ordering by relation count with pagination
+  const allPlayers = await prisma.player.findMany({
+    include: {
+      runs: {
+        where: {
+          verifiedStatus: 'VERIFIED',
+        },
+        include: {
+          map: {
+            select: {
+              stars: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          role: true,
+        },
+      },
+    },
+  })
+
+  // Sort by number of clears (descending), then take first page
+  const sortedPlayers = allPlayers.sort((a, b) => b.runs.length - a.runs.length)
+  const players = sortedPlayers.slice(0, pageSize)
+
+  const totalCount = await prisma.player.count()
+
+  return <PlayersClient initialPlayers={players} totalCount={totalCount} />
+}
+

@@ -1,0 +1,61 @@
+/* MINIMAL THEME - Clean and simple */
+
+:root {
+  --background: #ffffff;
+  --foreground: #1f2937;
+  --primary: #3b82f6;
+  --secondary: #6366f1;
+  --accent: #8b5cf6;
+  --border: #e5e7eb;
+  --hover: #f3f4f6;
+  
+  /* GM tier colors */
+  --color-gm-green: #10b981;
+  --color-gm-yellow: #f59e0b;
+  --color-gm-red: #ef4444;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #111827;
+    --foreground: #f9fafb;
+    --border: #374151;
+    --hover: #1f2937;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Minimal scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Override pink gradients with simple blue */
+.bg-gradient-to-r {
+  background: var(--primary) !important;
+}
+
+.bg-clip-text {
+  background: linear-gradient(to right, var(--primary), var(--secondary)) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
