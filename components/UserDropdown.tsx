@@ -112,7 +112,7 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
             {user.claimedPlayerId && (
               <>
                 <Link
-                  href="/submit-clear"
+                  href="/submit-run"
                   className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] transition-colors"
                   onClick={() => setIsOpen(false)}
                 >

@@ -10,7 +10,7 @@ export default function Footer() {
           </div>
           <div className="text-xs text-[var(--foreground-muted)]">
             <a
-              href="https://celestegame.com"
+              href="https://www.celestegame.com"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[var(--foreground)] transition-colors"
