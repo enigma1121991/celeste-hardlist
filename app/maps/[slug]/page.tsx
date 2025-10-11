@@ -4,6 +4,44 @@ import Image from 'next/image'
 import { getMapBySlug } from '@/lib/maps'
 import { GM_TIER_LABELS, RUN_TYPE_LABELS } from '@/lib/types'
 import { getYouTubeThumbnailFromUrl, getYouTubeEmbedUrl } from '@/lib/youtube'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: MapPageProps): Promise<Metadata> {
+  const map = await getMapBySlug(params.slug)
+  const clearCount = map.runs.length
+
+  const getStarColor = (stars: number): string => {
+    const colorMap: Record<number, string> = {
+      1: '#9900ff',
+      2: '#ff39d2',
+      3: '#fe496a',
+      4: '#ff5435',
+      5: '#ffff32',
+      6: '#32ff32',
+      7: '#32ffa0',
+      8: '#32ffff',
+    }
+    return colorMap[stars] || '#71717a'
+  }
+
+  return {
+    title: `${map.stars}★ - ${map.name} - Hard Clears`,
+    description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
+    themeColor: `${getStarColor(map.stars)}`,
+    openGraph: {
+      title: `${map.stars}★ - ${map.name} - Hard Clears`,
+      description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
+      type: 'website',
+      url: `https://hardclears.com/players/${map.slug}`,
+      // image: discord-pfp
+    },
+    twitter: {
+      card: 'summary',
+      title: `${map.stars}★ - ${map.name} - Hard Clears`,
+      description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
+    },
+  }
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -48,7 +86,7 @@ export default async function MapPage({ params }: MapPageProps) {
   const embedUrl = map.canonicalVideoUrl ? getYouTubeEmbedUrl(map.canonicalVideoUrl) : null
 
   // Group runs by player first
-  const runsByPlayer = map.runs.reduce((acc, run) => {
+  const runsByPlayer = map.runs.reduce((acc: { [x: string]: any[] }, run: { playerId: any }) => {
     const playerId = run.playerId
     if (!acc[playerId]) {
       acc[playerId] = []
@@ -59,8 +97,9 @@ export default async function MapPage({ params }: MapPageProps) {
 
   // For each player, get the primary run (with video if possible) and additional runs
   const playerRunsData = Object.values(runsByPlayer).map((playerRuns) => {
+    const runs = playerRuns as typeof map.runs;
     // Sort to prioritize runs with YouTube video thumbnails
-    const sorted = [...playerRuns].sort((a, b) => {
+    const sorted = [...runs].sort((a, b) => {
       const aHasVideo = a.evidenceUrls?.[0] && getYouTubeThumbnailFromUrl(a.evidenceUrls[0], 'default') !== null
       const bHasVideo = b.evidenceUrls?.[0] && getYouTubeThumbnailFromUrl(b.evidenceUrls[0], 'default') !== null
       if (aHasVideo && !bHasVideo) return -1
@@ -69,7 +108,7 @@ export default async function MapPage({ params }: MapPageProps) {
     })
     
     return {
-      player: playerRuns[0].player,
+      player: runs[0].player,
       primaryRun: sorted[0],
       additionalRuns: sorted.slice(1),
     }
@@ -171,28 +210,27 @@ export default async function MapPage({ params }: MapPageProps) {
 
       {/* Run Type Breakdown */}
       {(() => {
-        const runTypeCounts = map.runs.reduce((acc, run) => {
+        const runTypeCounts = map.runs.reduce((acc: { [x: string]: any }, run: { type: string | number }) => {
           acc[run.type] = (acc[run.type] || 0) + 1
           return acc
         }, {} as Record<string, number>)
 
-        const breakdownItems = Object.entries(runTypeCounts)
-          .filter(([_, count]) => count > 0)
-          .sort((a, b) => {
-            // Sort by run type priority
-            const priority: Record<string, number> = {
-              FULL_CLEAR_GB: 1,
-              CLEAR_GB: 2,
-              FULL_CLEAR_VIDEO: 3,
-              FULL_CLEAR: 4,
-              CLEAR_VIDEO: 5,
-              CLEAR: 6,
-              ALL_DEATHLESS_SEGMENTS: 7,
-              CREATOR_CLEAR: 8,
-              UNKNOWN: 9,
-            }
-            return (priority[a[0]] || 999) - (priority[b[0]] || 999)
-          })
+        const breakdownItems = (Object.entries(runTypeCounts) as [string, number][])
+            .filter(([_, count]) => count > 0)
+            .sort((a, b) => {
+                const priority: Record<string, number> = {
+                FULL_CLEAR_GB: 1,
+                CLEAR_GB: 2,
+                FULL_CLEAR_VIDEO: 3,
+                FULL_CLEAR: 4,
+                CLEAR_VIDEO: 5,
+                CLEAR: 6,
+                ALL_DEATHLESS_SEGMENTS: 7,
+                CREATOR_CLEAR: 8,
+                UNKNOWN: 9,
+                }
+                return (priority[a[0]] || 999) - (priority[b[0]] || 999)
+            })
 
         if (breakdownItems.length === 0) return null
 

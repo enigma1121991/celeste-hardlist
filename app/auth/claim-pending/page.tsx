@@ -3,6 +3,23 @@ import Link from 'next/link'
 import { requireAuth } from '@/lib/auth-utils'
 import { getClaimByToken } from '@/lib/queries/claims'
 import PlayerClaimCard from '@/components/PlayerClaimCard'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Claim Pending - Hard Clears',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Claim Pending - Hard Clears',
+      type: 'website',
+      url: 'https://www.hardclears.com/auth/claim-pending',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Claim Pending - Hard Clears',
+    },
+  }
+}
 
 export default async function ClaimPendingPage({
   searchParams,

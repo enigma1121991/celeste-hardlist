@@ -1,3 +1,23 @@
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Not Found - Hard Clears',
+    description: 'The page you\'re looking for doesn\'t exist. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Not Found - Hard Clears',
+      description: 'The page you\'re looking for doesn\'t exist. ',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Not Found - Hard Clears',
+      description: 'The page you\'re looking for doesn\'t exist. ',
+    },
+  }
+}
+
 export default function NotFound() {
   return (
     <div className="text-center py-20 max-w-2xl mx-auto">

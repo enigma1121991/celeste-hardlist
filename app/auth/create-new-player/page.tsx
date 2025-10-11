@@ -5,6 +5,26 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createNewPlayer } from '@/lib/actions/auth-actions'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Claim new player - Hard Clears',
+    description: 'Claim a fresh new player to your account. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Claim new player - Hard Clears',
+      description: 'Claim a fresh new player to your account. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/auth/claim-player',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Claim new player - Hard Clears',
+      description: 'Claim a fresh new player to your account. ',
+    },
+  }
+}
 
 export default function CreateNewPlayerPage() {
   const { data: session, status } = useSession()

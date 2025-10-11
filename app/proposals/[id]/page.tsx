@@ -8,6 +8,137 @@ import ProposalDetails from '@/components/ProposalDetails'
 import ProposalVoteSection from '@/components/ProposalVoteSection'
 import ProposalDiscussion from '@/components/ProposalDiscussion'
 import { updateProposalStatus } from '@/lib/actions/proposal-actions'
+import { Metadata } from 'next'
+
+export async function generateMetadata({ params }: ProposalPageProps): Promise<Metadata> {
+    const { id } = await params
+  const session = await auth()
+
+  const proposal = await prisma.proposal.findUnique({
+    where: { id },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          discordUsername: true,
+        },
+      },
+      closedBy: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+      votes: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              discordUsername: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      },
+      comments: {
+        where: {
+          parentId: null,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+              discordUsername: true,
+            },
+          },
+          replies: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                  discordUsername: true,
+                },
+              },
+              replies: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      image: true,
+                      discordUsername: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  createdAt: 'asc',
+                },
+              },
+            },
+            orderBy: {
+              createdAt: 'asc',
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      },
+    },
+  })
+
+  if (!proposal) {
+    return {
+        title: 'Proposal not found! - Hard Clears',
+        openGraph: {
+            title: 'Proposal not found! - Hard Clears',
+            type: 'website',
+
+        }
+    }
+  }
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+  }
+
+  return {
+    title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
+    description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
+        proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
+    themeColor: '#71717a',
+    openGraph: {
+      title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
+      description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
+        proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
+      type: 'website',
+      url: `https://hardclears.com/proposals/${proposal.id}`,
+    },
+    twitter: {
+      card: 'summary',
+      title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
+      description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
+        proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
+    },
+  }
+}
 
 interface ProposalPageProps {
   params: Promise<{ id: string }>

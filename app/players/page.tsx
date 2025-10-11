@@ -1,5 +1,26 @@
 import { prisma } from '@/lib/prisma'
 import PlayersClient from '@/components/PlayersClient'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+
+  return {
+    title: 'Player Search - Hard Clears',
+    description: 'Search for a player. Loading more as you scroll. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Player Search - Hard Clears',
+      description: 'Search for a player. Loading more as you scroll. ',
+      type: 'website',
+      url: 'https://hardclears.com/players',
+    },
+    twitter: {
+      card: 'summary',
+      title: `Player Search - Hard Clears`,
+      description: `Search for a player. Loading more as you scroll. `,
+    },
+  }
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -33,7 +54,7 @@ export default async function PlayersPage() {
   })
 
   // Sort by number of clears (descending), then take first page
-  const sortedPlayers = allPlayers.sort((a, b) => b.runs.length - a.runs.length)
+  const sortedPlayers = allPlayers.sort((a: any, b: any) => b.runs.length - a.runs.length)
   const players = sortedPlayers.slice(0, pageSize)
 
   const totalCount = await prisma.player.count()

@@ -2,6 +2,26 @@ import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import ProposalsClient from '@/components/ProposalsClient'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Community Proposals - Hard Clears',
+    description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Community Proposals - Hard Clears',
+      description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/proposals',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Community Proposals - Hard Clears',
+      description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',
+    },
+  }
+}
 
 export default async function ProposalsPage() {
   const session = await auth()

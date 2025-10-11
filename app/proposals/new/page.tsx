@@ -2,6 +2,26 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import CreateProposalForm from '@/components/CreateProposalForm'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Create a proposal - Hard Clears',
+    description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Create a proposal - Hard Clears',
+      description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/proposals/new',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Create a proposal - Hard Clears',
+      description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',
+    },
+  }
+}
 
 export default async function NewProposalPage() {
   const session = await auth()

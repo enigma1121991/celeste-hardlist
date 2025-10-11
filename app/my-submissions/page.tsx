@@ -2,6 +2,28 @@ import { requireAuth } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import MySubmissionsClient from '@/components/MySubmissionsClient'
+import { Metadata } from 'next'
+
+
+export async function generateMetadata(): Promise<Metadata> {
+
+  return {
+    title: 'My Submissions - Hard Clears',
+    description: 'Check your submissions to the hard list. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'My Submissions - Hard Clears',
+      description: 'Check your submissions to the hard list. ',
+      type: 'website',
+      url: 'https://hardclears.com/my-submissions',
+    },
+    twitter: {
+      card: 'summary',
+      title: `My Submissions - Hard Clears`,
+      description: `Check your submissions to the hard list. `,
+    },
+  }
+}
 
 export default async function MySubmissionsPage() {
   const session = await requireAuth()

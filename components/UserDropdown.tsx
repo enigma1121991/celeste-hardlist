@@ -53,7 +53,7 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
         {user.image ? (
           <Image
             src={user.image}
-            alt={user.name || 'User'}
+            alt={''}
             width={24}
             height={24}
             className="rounded-full"

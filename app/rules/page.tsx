@@ -1,3 +1,24 @@
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Rules & Guidelines - Hard Clears',
+    description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Rules & Guidelines - Hard Clears',
+      description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/rules',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Rules & Guidelines - Hard Clears',
+      description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',
+    },
+  }
+}
+
 export default function RulesPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">

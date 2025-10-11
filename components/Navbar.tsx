@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import UserDropdown from './UserDropdown'
 import { canVerify } from '@/lib/auth-utils'
+// import "./globals.css";
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -53,7 +54,7 @@ export default function Navbar() {
   }, [session])
 
   return (
-    <nav className="bg-[var(--background-elevated)] border-b border-[var(--border)]">
+    <nav className="fixed bg-[var(--background-elevated)] border-b border-[var(--border)]">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14">
           {/* Logo */}

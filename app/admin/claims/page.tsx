@@ -2,6 +2,26 @@ import { requireRole } from '@/lib/auth-utils'
 import { UserRole } from '@prisma/client'
 import { getPendingClaims } from '@/lib/queries/claims'
 import ClaimApprovalCard from '@/components/ClaimApprovalCard'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Player Claims - Hard Clears',
+    description: 'Review and approve pending player claim requests. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Player Claims - Hard Clears',
+      description: 'Review and approve pending player claim requests. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/admin/claims',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Player Claims - Hard Clears',
+      description: 'Review and approve pending player claim requests. ',
+    },
+  }
+}
 
 export default async function AdminClaimsPage() {
   await requireRole(UserRole.VERIFIER)

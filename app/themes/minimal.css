@@ -55,6 +55,7 @@ body {
 
 .bg-clip-text {
   background: linear-gradient(to right, var(--primary), var(--secondary)) !important;
+  background-clip: text !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }

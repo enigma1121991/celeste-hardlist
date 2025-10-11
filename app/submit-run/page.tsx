@@ -2,6 +2,26 @@ import { requireAuth } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import ClearSubmissionForm from '@/components/ClearSubmissionForm'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Submit Clear - Hard Clears',
+    description: 'Submit a new clear for your profile to the hard list. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Submit Clear - Hard Clears',
+      description: 'Submit a new clear for your profile to the hard list. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/submit-run',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Submit Clear - Hard Clears',
+      description: 'Submit a new clear for your profile to the hard list. ',
+    },
+  }
+}
 
 export default async function SubmitClearPage() {
   const session = await requireAuth()

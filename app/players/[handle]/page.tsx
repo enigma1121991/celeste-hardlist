@@ -7,6 +7,49 @@ import RoleBadge from '@/components/RoleBadge'
 import DiscordTag from '@/components/DiscordTag'
 import { RUN_TYPE_LABELS } from '@/lib/types'
 import { getYouTubeThumbnailFromUrl, getYouTubeEmbedUrl } from '@/lib/youtube'
+import { Metadata } from 'next'
+
+export async function generateMetadata({params}: { params: { handle: string }}): Promise<Metadata> {
+  const player = await getPlayerByHandle(decodeURIComponent(params.handle))
+
+  const stats = calculatePlayerStats(player.runs)
+
+  const hardestClear = [...player.runs]
+    .filter(run => run.map.stars && run.map.stars > 0)
+    .sort((a, b) => (b.map.stars || 0) - (a.map.stars || 0))[0]
+
+  const getStarColor = (stars: number): string => {
+    const colorMap: Record<number, string> = {
+      1: '#9900ff',
+      2: '#ff39d2',
+      3: '#fe496a',
+      4: '#ff5435',
+      5: '#ffff32',
+      6: '#32ff32',
+      7: '#32ffa0',
+      8: '#32ffff',
+    }
+    return colorMap[stars] || '#71717a'
+  }
+
+  return {
+    title: `${player.handle} - Profile - Hard Clears`,
+    description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
+    themeColor: `${getStarColor(hardestClear.map.stars)}`,
+    // image: TODO: Player PFP
+    openGraph: {
+      title: `${player.handle} - Profile - Hard Clears`,
+      description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
+      type: 'profile',
+      url: `https://hardclears.com/players/${player.handle}`,
+    },
+    twitter: {
+      card: 'summary',
+      title: `${player.handle} - Profile - Hard Clears`,
+      description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
+    },
+  }
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -26,10 +69,10 @@ export default async function PlayerPage({
 
   // Calculate player rank
   const allPlayers = await getPlayers()
-  const playerClearCounts = allPlayers.map(p => ({
+  const playerClearCounts = allPlayers.map((p: { id: any; runs: string | any[] }) => ({
     id: p.id,
     clears: p.runs.length
-  })).sort((a, b) => b.clears - a.clears)
+  })).sort((a: { clears: number }, b: { clears: number }) => b.clears - a.clears)
 
   let rank = 1
   let currentRank = 1

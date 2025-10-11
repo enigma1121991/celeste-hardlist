@@ -36,7 +36,7 @@
   --star-8: #32ffff;
 }
 
-@theme inline {
+:root {
   --color-background: var(--background);
   --color-background-elevated: var(--background-elevated);
   --color-background-hover: var(--background-hover);
@@ -55,12 +55,12 @@
   --color-mountain-light: var(--mountain-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
+
   /* GM tier colors */
   --color-gm-green: #22c55e;
   --color-gm-yellow: #eab308;
   --color-gm-red: #ef4444;
-  
+
   /* Star colors */
   --color-star-1: var(--star-1);
   --color-star-2: var(--star-2);
@@ -96,4 +96,11 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--border-hover);
+}
+
+.border-gradient-nav {
+    border-image: linear-gradient(90deg, #9900ff 0%, #ff39d2 10%, #fe496a 20%, #ff5435 30%, #FFFF32 40%, #32FF32 50%, 
+                                #32FFA0 60%, #83FFE9 70%, #83FFE9 80%, #4058FC 90%, #8E6EEA 100%) 30;
+    border-width: 0 0 3px 0;
+    border-style: solid;
 }

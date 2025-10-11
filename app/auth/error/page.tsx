@@ -4,6 +4,25 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { Suspense } from 'react'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Authentication Error - Hard Clears',
+    description: 'An error occurred during authentication. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Authentication Error - Hard Clears',
+      description: 'An error occurred during authentication. ',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Authentication Error - Hard Clears',
+      description: 'An error occurred during authentication. ',
+    },
+  }
+}
 
 function AuthErrorContent() {
   const searchParams = useSearchParams()

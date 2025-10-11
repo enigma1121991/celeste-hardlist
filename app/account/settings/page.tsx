@@ -2,6 +2,26 @@ import { requireAuth } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import SettingsForm from '@/components/SettingsForm'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Account Settings - Hard Clears',
+    description: 'Manage your profile information and social links. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Account Settings - Hard Clears',
+      description: 'Manage your profile information and social links. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/account/settings',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Account Settings - Hard Clears',
+      description: 'Manage your profile information and social links. ',
+    },
+  }
+}
 
 export default async function AccountSettingsPage() {
   const session = await requireAuth()

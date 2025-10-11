@@ -2,6 +2,26 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import spikeImage from '@/images/spike.png'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Celeste Hardlist - Hard Clears',
+    description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Celeste Hardlist - Hard Clears',
+      description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Celeste Hardlist - Hard Clears',
+      description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+    },
+  }
+}
 
 export const dynamic = 'force-dynamic'
 

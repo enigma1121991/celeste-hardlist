@@ -2,6 +2,26 @@ import { requireRole } from '@/lib/auth-utils'
 import { prisma } from '@/lib/prisma'
 import VerificationQueueClient from '@/components/VerificationQueueClient'
 import { UserRole } from '@prisma/client'
+import { Metadata } from 'next'
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Verification Queue - Hard Clears',
+    description: 'Review and verify clear submissions. ',
+    themeColor: '#71717a',
+    openGraph: {
+      title: 'Verification Queue - Hard Clears',
+      description: 'Review and verify clear submissions. ',
+      type: 'website',
+      url: 'https://www.hardclears.com/verification-queue',
+    },
+    twitter: {
+      card: 'summary',
+      title: 'Verification Queue - Hard Clears',
+      description: 'Review and verify clear submissions. ',
+    },
+  }
+}
 
 export default async function VerificationQueuePage() {
   await requireRole(UserRole.VERIFIER)
