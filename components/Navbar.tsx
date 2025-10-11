@@ -54,7 +54,7 @@ export default function Navbar() {
   }, [session])
 
   return (
-    <nav className="fixed bg-[var(--background-elevated)] border-b border-[var(--border)]">
+    <nav className="fixed bg-[var(--background-elevated)] border-gradient-nav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14">
           {/* Logo */}
