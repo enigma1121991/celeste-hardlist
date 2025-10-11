@@ -32,3 +32,4 @@ echo "📝 Don't forget to also set:"
 echo "- DATABASE_URL (your Supabase connection string)"
 echo "- DISCORD_CLIENT_ID (from Discord Developer Portal)"
 echo "- DISCORD_CLIENT_SECRET (from Discord Developer Portal)"
+

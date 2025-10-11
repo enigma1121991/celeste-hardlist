@@ -124,10 +124,10 @@ export type ProposalData = MapDifficultyProposalData | AddMapProposalData | Chan
 
 // Run type labels
 export const RUN_TYPE_LABELS: Record<string, string> = {
-  FULL_CLEAR_VIDEO: 'Full Clear (Video)',
-  FULL_CLEAR: 'Full Clear',
-  CLEAR_VIDEO: 'Clear (Video)',
-  CLEAR: 'Clear',
+  FULL_CLEAR_VIDEO: 'Full Clear',
+  FULL_CLEAR: 'Full Clear (No Video)',
+  CLEAR_VIDEO: 'Clear',
+  CLEAR: 'Clear (No Video)',
   FULL_CLEAR_GB: 'Full Clear (Golden)',
   CLEAR_GB: 'Clear (Golden)',
   CREATOR_CLEAR: 'Creator Clear',

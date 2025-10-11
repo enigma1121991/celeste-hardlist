@@ -132,3 +132,4 @@ After setting up environment variables:
 4. **Test all features** to ensure everything works
 
 Your application should now work properly! 🎉
+

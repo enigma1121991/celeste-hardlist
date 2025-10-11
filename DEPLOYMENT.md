@@ -164,3 +164,4 @@ If you encounter issues:
 2. Verify all environment variables
 3. Test database connectivity
 4. Check Discord OAuth configuration
+

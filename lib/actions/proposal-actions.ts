@@ -294,7 +294,7 @@ export async function addComment(
         currentParentId = parent?.parentId || null
       }
 
-      if (depth >= 3) {
+      if (depth >= 2) {
         return { error: 'Maximum comment depth reached' }
       }
     }
@@ -313,6 +313,45 @@ export async function addComment(
   } catch (error) {
     console.error('Error adding comment:', error)
     return { error: 'Failed to add comment' }
+  }
+}
+
+export async function deleteComment(commentId: string) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user) {
+      return { error: 'You must be signed in to delete comments' }
+    }
+
+    // Get the comment to verify ownership and get proposalId
+    const comment = await prisma.proposalComment.findUnique({
+      where: { id: commentId },
+      select: { 
+        id: true,
+        userId: true,
+        proposalId: true,
+      },
+    })
+
+    if (!comment) {
+      return { error: 'Comment not found' }
+    }
+    // Check if user owns the comment
+    if (comment.userId !== session.user.id) {
+      return { error: 'You can only delete your own comments' }
+    }
+
+    // Delete the comment (this will also delete any replies due to cascade)
+    await prisma.proposalComment.delete({
+      where: { id: commentId },
+    })
+
+    revalidatePath(`/proposals/${comment.proposalId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting comment:', error)
+    return { error: 'Failed to delete comment' }
   }
 }
 

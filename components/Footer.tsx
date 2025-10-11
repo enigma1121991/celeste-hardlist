@@ -10,12 +10,12 @@ export default function Footer() {
           </div>
           <div className="text-xs text-[var(--foreground-muted)]">
             <a
-              href="https://www.celestegame.com"
+              href="https://discord.gg/eUWvP2wh8j"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[var(--foreground)] transition-colors"
             >
-              Celeste Official Site
+              Hardlist Discord
             </a>
           </div>
         </div>

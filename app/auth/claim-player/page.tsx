@@ -112,7 +112,7 @@ export default function ClaimPlayerPage() {
         </h1>
         <p className="text-[var(--foreground-muted)] mb-6">
           Select your player profile from the Hardlist. After selection, you'll be shown a
-          claim token to screenshot and send to an admin for verification.
+          claim token to screenshot and send to an admin for verification. (For now, dm @mewwmeww or @deesoff)
         </p>
 
         {error && (

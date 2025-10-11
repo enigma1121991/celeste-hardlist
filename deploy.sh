@@ -26,3 +26,4 @@ echo "   - NEXTAUTH_URL"
 echo "   - NEXTAUTH_SECRET"
 echo "   - DISCORD_CLIENT_ID"
 echo "   - DISCORD_CLIENT_SECRET"
+

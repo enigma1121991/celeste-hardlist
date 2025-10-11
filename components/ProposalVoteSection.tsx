@@ -90,6 +90,40 @@ export default function ProposalVoteSection({
     setShowForceHighlightModal(true)
   }
 
+  const handleRemoveVote = async () => {
+    if (!currentUserId) {
+      alert('You must be signed in to remove your vote')
+      return
+    }
+
+    if (!isOpen) {
+      alert('This proposal is no longer accepting vote changes')
+      return
+    }
+
+    setIsVoting(true)
+
+    try {
+      const response = await fetch(`/api/proposals/${proposalId}/vote`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to remove vote')
+        return
+      }
+
+      router.refresh()
+    } catch (error) {
+      console.error('Error removing vote:', error)
+      alert('Failed to remove vote')
+    } finally {
+      setIsVoting(false)
+    }
+  }
+
   const getVoteButtonClass = (voteType: VoteType) => {
     const isSelected = userVote?.vote === voteType
     const baseClass = 'px-6 py-3 rounded-lg font-medium transition-colors'
@@ -111,28 +145,43 @@ export default function ProposalVoteSection({
     <div className="space-y-6">
       {/* Vote Buttons */}
       {currentUserId && isOpen && (
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={() => handleVote('YES')}
-            disabled={isVoting}
-            className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => handleVote('NO')}
-            disabled={isVoting}
-            className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
-          >
-            No
-          </button>
-          <button
-            onClick={() => handleVote('ABSTAIN')}
-            disabled={isVoting}
-            className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
-          >
-            Abstain
-          </button>
+        <div className="space-y-4">
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => handleVote('YES')}
+              disabled={isVoting}
+              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+            >
+              Yes
+            </button>
+            <button
+              onClick={() => handleVote('NO')}
+              disabled={isVoting}
+              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+            >
+              No
+            </button>
+            <button
+              onClick={() => handleVote('ABSTAIN')}
+              disabled={isVoting}
+              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+            >
+              Abstain
+            </button>
+          </div>
+          
+          {/* Remove Vote Button */}
+          {userVote && (
+            <div className="text-center">
+              <button
+                onClick={handleRemoveVote}
+                disabled={isVoting}
+                className="text-sm text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+              >
+                Remove my vote
+              </button>
+            </div>
+          )}
         </div>
       )}
 

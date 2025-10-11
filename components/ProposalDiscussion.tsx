@@ -33,11 +33,22 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: Com
   const [isReplying, setIsReplying] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const canReply = depth < 3
+  const canReply = depth < 2
+  const canDelete = currentUserId === comment.user.id
+  
+  const MAX_COMMENT_LENGTH = 2000
+  const isOverLimit = replyContent.length > MAX_COMMENT_LENGTH
+  const isNearLimit = replyContent.length > MAX_COMMENT_LENGTH * 0.8
 
   const handleSubmitReply = async () => {
     if (!replyContent.trim()) return
+    
+    if (isOverLimit) {
+      alert(`Reply is too long. Maximum ${MAX_COMMENT_LENGTH} characters allowed.`)
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -70,6 +81,34 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: Com
     }
   }
 
+  const handleDeleteComment = async () => {
+    if (!confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+      return
+    }
+
+    setIsDeleting(true)
+
+    try {
+      const response = await fetch(`/api/proposals/comments/${comment.id}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete comment')
+        return
+      }
+
+      router.refresh()
+    } catch (error) {
+      console.error('Error deleting comment:', error)
+      alert('Failed to delete comment')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleString('en-US', {
       month: 'short',
@@ -84,44 +123,86 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: Com
     <div className="space-y-3">
       <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg p-4">
         {/* Comment Header */}
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-sm font-medium text-[var(--foreground)]">
-            {comment.user.name || comment.user.discordUsername || 'Unknown'}
-          </span>
-          <span className="text-xs text-[var(--foreground-muted)]">
-            {formatDate(comment.createdAt)}
-          </span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-[var(--foreground)]">
+              {comment.user.name || comment.user.discordUsername || 'Unknown'}
+            </span>
+            <span className="text-xs text-[var(--foreground-muted)]">
+              {formatDate(comment.createdAt)}
+            </span>
+          </div>
+          
+          {/* Delete Button */}
+          {canDelete && (
+            <button
+              onClick={handleDeleteComment}
+              disabled={isDeleting}
+              className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          )}
         </div>
 
         {/* Comment Content */}
-        <div className="text-sm text-[var(--foreground-muted)] whitespace-pre-wrap mb-2">
+        <div className="text-sm text-[var(--foreground-muted)] whitespace-pre-wrap break-words overflow-wrap-anywhere mb-2">
           {comment.content}
         </div>
 
         {/* Reply Button */}
-        {currentUserId && canReply && (
+        {currentUserId && canReply &&!isReplying&& (
           <button
             onClick={() => setIsReplying(!isReplying)}
             className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
           >
-            {isReplying ? 'Cancel' : 'Reply'}
+            
+            {isReplying ? '' : 'Reply'}
           </button>
         )}
 
         {/* Reply Form */}
         {isReplying && (
           <div className="mt-3 space-y-2">
-            <textarea
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              placeholder="Write your reply..."
-              className="w-full px-3 py-2 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] text-sm resize-none"
-              rows={3}
-            />
+            <div className="relative">
+              <textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Write your reply..."
+                className={`w-full px-3 py-2 bg-[var(--background)] border rounded text-[var(--foreground)] text-sm resize-none ${
+                  isOverLimit 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : isNearLimit 
+                    ? 'border-yellow-500 focus:border-yellow-500' 
+                    : 'border-[var(--border)] focus:border-blue-500'
+                }`}
+                rows={3}
+              />
+              {/* Character Counter */}
+              <div className="absolute bottom-1 right-1 text-xs">
+                <span className={`${
+                  isOverLimit 
+                    ? 'text-red-400' 
+                    : isNearLimit 
+                    ? 'text-yellow-400' 
+                    : 'text-[var(--foreground-muted)]'
+                }`}>
+                  {replyContent.length}/{MAX_COMMENT_LENGTH}
+                </span>
+              </div>
+            </div>
+            
+            {/* Character Limit Warning */}
+            {isOverLimit && (
+              <div className="text-xs text-red-400">
+                Reply exceeds character limit. Please shorten your message.
+              </div>
+            )}
+            
             <div className="flex gap-2">
               <button
                 onClick={handleSubmitReply}
-                disabled={isSubmitting || !replyContent.trim()}
+                disabled={isSubmitting || !replyContent.trim() || isOverLimit}
                 className="px-3 py-1.5 bg-white text-black border border-gray-300 rounded text-sm hover:bg-gray-100 transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? 'Posting...' : 'Post Reply'}
@@ -165,9 +246,18 @@ export default function ProposalDiscussion({
   const router = useRouter()
   const [newComment, setNewComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const MAX_COMMENT_LENGTH = 2000
+  const isOverLimit = newComment.length > MAX_COMMENT_LENGTH
+  const isNearLimit = newComment.length > MAX_COMMENT_LENGTH * 0.8
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return
+    
+    if (isOverLimit) {
+      alert(`Comment is too long. Maximum ${MAX_COMMENT_LENGTH} characters allowed.`)
+      return
+    }
 
     setIsSubmitting(true)
 
@@ -206,16 +296,44 @@ export default function ProposalDiscussion({
       {/* New Comment Form */}
       {currentUserId && (
         <div className="space-y-3">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Share your thoughts..."
-            className="w-full px-4 py-3 bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg text-[var(--foreground)] resize-none"
-            rows={4}
-          />
+          <div className="relative">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Share your thoughts..."
+              className={`w-full px-4 py-3 bg-[var(--background-elevated)] border rounded-lg text-[var(--foreground)] resize-none ${
+                isOverLimit 
+                  ? 'border-red-500 focus:border-red-500' 
+                  : isNearLimit 
+                  ? 'border-yellow-500 focus:border-yellow-500' 
+                  : 'border-[var(--border)] focus:border-blue-500'
+              }`}
+              rows={4}
+            />
+            {/* Character Counter */}
+            <div className="absolute bottom-2 right-2 text-xs">
+              <span className={`${
+                isOverLimit 
+                  ? 'text-red-400' 
+                  : isNearLimit 
+                  ? 'text-yellow-400' 
+                  : 'text-[var(--foreground-muted)]'
+              }`}>
+                {newComment.length}/{MAX_COMMENT_LENGTH}
+              </span>
+            </div>
+          </div>
+          
+          {/* Character Limit Warning */}
+          {isOverLimit && (
+            <div className="text-sm text-red-400">
+              Comment exceeds character limit. Please shorten your message.
+            </div>
+          )}
+          
           <button
             onClick={handleSubmitComment}
-            disabled={isSubmitting || !newComment.trim()}
+            disabled={isSubmitting || !newComment.trim() || isOverLimit}
             className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
           >
             {isSubmitting ? 'Posting...' : 'Post Comment'}
