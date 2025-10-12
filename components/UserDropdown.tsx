@@ -44,6 +44,15 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
     await signOut({ callbackUrl: '/' })
   }
 
+  if (user.image) {
+    try {
+        console.log(user.image)
+        user.image = user.image.split("url=")[1].split("&")[0]
+    } catch (e) {
+        "fucked up"
+    }
+  }
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
@@ -52,7 +61,7 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
       >
         {user.image ? (
           <Image
-            src={user.image.split("url=")[1].split("&")[0]}
+            src={user.image}
             alt={''}
             width={24}
             height={24}
