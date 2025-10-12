@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'

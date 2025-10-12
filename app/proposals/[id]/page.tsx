@@ -20,6 +20,7 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
       createdBy: {
         select: {
           id: true,
+          role: true,
           name: true,
           image: true,
           discordUsername: true,
@@ -54,6 +55,7 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
         include: {
           user: {
             select: {
+              role: true,
               id: true,
               name: true,
               image: true,
@@ -64,6 +66,7 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
             include: {
               user: {
                 select: {
+                  role: true,
                   id: true,
                   name: true,
                   image: true,
@@ -74,6 +77,7 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
                 include: {
                   user: {
                     select: {
+                      role: true,
                       id: true,
                       name: true,
                       image: true,
@@ -122,7 +126,7 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
   return {
     title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
     description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
-        proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
+        proposal.closedAt && proposal.closedBy ? `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}` : ""}`,
     openGraph: {
       title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
       description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
@@ -154,6 +158,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
         select: {
           id: true,
           name: true,
+          role: true,
           image: true,
           discordUsername: true,
         },
@@ -189,6 +194,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
             select: {
               id: true,
               name: true,
+              role: true,
               image: true,
               discordUsername: true,
             },
@@ -199,6 +205,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
                 select: {
                   id: true,
                   name: true,
+                  role: true,
                   image: true,
                   discordUsername: true,
                 },
@@ -209,6 +216,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
                     select: {
                       id: true,
                       name: true,
+                      role: true,
                       image: true,
                       discordUsername: true,
                     },
@@ -369,6 +377,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
           proposalId={proposal.id}
           comments={proposal.comments}
           currentUserId={session?.user?.id}
+          originalPosterId={proposal.createdBy.id}
         />
       </div>
     </div>

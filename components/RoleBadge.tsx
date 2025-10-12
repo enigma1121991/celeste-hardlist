@@ -27,7 +27,7 @@ export default function RoleBadge({ role, size = "md" }: RoleBadgeProps) {
     },
     [UserRole.VERIFIER]: {
       label: "Verifier",
-      colors: "bg-blue-500/20 text-blue-400 border-blue-500/50",
+      colors: "bg-[#bef1ff]/20 text-[#bef1ff] border-[#bef1ff]/50",
     },
     [UserRole.USER]: {
       label: "User",

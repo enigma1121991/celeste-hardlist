@@ -402,7 +402,10 @@ export default async function PlayerPage({
                             rel="noopener noreferrer"
                             className="inline-block px-2 py-1 bg-[var(--background-hover)] border border-[var(--border)] text-[var(--foreground)] rounded text-xs hover:border-[var(--border-hover)] transition-colors"
                           >
-                            Evidence
+                            {run.evidenceUrls[0].includes("youtu") ? "YouTube" : 
+                            (run.evidenceUrls[0].includes("bilibili") || run.evidenceUrls[0].includes("b23.tv")) ? "Bilibili" :
+                            run.evidenceUrls[0].includes("catbox") ? "Catbox" :
+                            run.evidenceUrls[0].includes("discord") ? "Discord" : "Other"}
                           </a>
                         ) : (
                           <div className="flex gap-1 justify-center">

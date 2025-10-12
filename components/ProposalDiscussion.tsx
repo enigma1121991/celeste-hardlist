@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ProposalComment } from '@prisma/client'
 import { UserRole } from '@prisma/client'
 import RoleBadge from '@/components/RoleBadge'
+import Link from 'next/link'
 
 type CommentWithUser = ProposalComment & {
   user: {
@@ -21,17 +22,19 @@ interface ProposalDiscussionProps {
   proposalId: string
   comments: CommentWithUser[]
   currentUserId?: string
+  originalPosterId: string
 }
 
 interface CommentItemProps {
   comment: CommentWithUser
   proposalId: string
   currentUserId?: string
+  originalPosterId: string
   depth: number
   onReply: () => void
 }
 
-function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: CommentItemProps) {
+function CommentItem({ comment, proposalId, currentUserId, depth, onReply, originalPosterId }: CommentItemProps) {
   const router = useRouter()
   const [isReplying, setIsReplying] = useState(false)
   const [replyContent, setReplyContent] = useState('')
@@ -128,10 +131,13 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: Com
         {/* Comment Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-[var(--foreground)]">
+            <Link href={`/players/${encodeURIComponent(comment.user.name || "")}`} className="text-sm font-medium text-[var(--foreground)]">
               {comment.user.name || comment.user.discordUsername || 'Unknown'} 
-            </span>
+            </Link>
             {comment.user && <RoleBadge role={comment.user.role} size="sm" />}
+            {comment.user.id == originalPosterId && <span 
+            className={`inline-flex items-center px-2 py-0.5 text-xs rounded-full font-semibold border bg-blue-500/20 text-blue-400 border-blue-500/50`}>OP
+            </span>}
             <span className="text-xs text-[var(--foreground-muted)]">
               {formatDate(comment.createdAt)}
             </span>
@@ -234,6 +240,7 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: Com
               currentUserId={currentUserId}
               depth={depth + 1}
               onReply={onReply}
+              originalPosterId={originalPosterId}
             />
           ))}
         </div>
@@ -246,6 +253,7 @@ export default function ProposalDiscussion({
   proposalId,
   comments,
   currentUserId,
+  originalPosterId
 }: ProposalDiscussionProps) {
   const router = useRouter()
   const [newComment, setNewComment] = useState('')
@@ -294,7 +302,10 @@ export default function ProposalDiscussion({
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-bold text-[var(--foreground)]">
-        Discussion ({comments.length})
+        Discussion ({comments.reduce((count, c) => 
+            count + 1 + (c.replies ? c.replies.reduce(
+            (rCount, r) => rCount + 1 + (r.replies ? r.replies.length : 0),
+            0) : 0), 0)})
       </h3>
 
       {/* New Comment Form */}
@@ -358,6 +369,7 @@ export default function ProposalDiscussion({
               comment={comment}
               proposalId={proposalId}
               currentUserId={currentUserId}
+              originalPosterId={originalPosterId}
               depth={1}
               onReply={() => {}}
             />

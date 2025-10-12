@@ -30,17 +30,21 @@ export default function ProposalVoteSection({
   const [showForceHighlightModal, setShowForceHighlightModal] = useState(false)
   const [forceHighlightReasoning, setForceHighlightReasoning] = useState('')
   const [pendingVote, setPendingVote] = useState<VoteType | null>(null)
+  const [showClearedOnly, setShowClearedOnly] = useState(false)
 
   const userVote = votes.find((v) => v.userId === currentUserId)
   const isOpen = proposalStatus === 'PENDING'
 
-  const voteCounts = {
-    YES: votes.filter((v) => v.vote === 'YES').length,
-    NO: votes.filter((v) => v.vote === 'NO').length,
-    ABSTAIN: votes.filter((v) => v.vote === 'ABSTAIN').length,
-  }
+  const displayedVotes = showClearedOnly
+    ? votes.filter((v) => v.hasCleared)
+    : votes
 
-  const totalVotes = votes.length
+  const displayedVoteCounts = {
+    YES: displayedVotes.filter((v) => v.vote === 'YES').length,
+    NO: displayedVotes.filter((v) => v.vote === 'NO').length,
+    ABSTAIN: displayedVotes.filter((v) => v.vote === 'ABSTAIN').length,
+  }
+  const totalDisplayedVotes = displayedVotes.length
 
   const handleVote = async (vote: VoteType, forceHighlight: boolean = false) => {
     if (!currentUserId) {
@@ -124,23 +128,6 @@ export default function ProposalVoteSection({
     }
   }
 
-  const getVoteButtonClass = (voteType: VoteType) => {
-    const isSelected = userVote?.vote === voteType
-    const baseClass = 'px-6 py-3 rounded-lg font-medium transition-colors'
-    
-    if (isSelected) {
-      if (voteType === 'YES') return `${baseClass} bg-green-500 text-white`
-      if (voteType === 'NO') return `${baseClass} bg-red-500 text-white`
-      if (voteType === 'ABSTAIN') return `${baseClass} bg-gray-500 text-white`
-    }
-
-    if (voteType === 'YES') return `${baseClass} bg-green-500/20 text-green-400 border border-green-500/30 hover:bg-green-500/30`
-    if (voteType === 'NO') return `${baseClass} bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30`
-    if (voteType === 'ABSTAIN') return `${baseClass} bg-gray-500/20 text-gray-400 border border-gray-500/30 hover:bg-gray-500/30`
-    
-    return baseClass
-  }
-
   return (
     <div className="space-y-6">
       {/* Vote Buttons */}
@@ -199,99 +186,106 @@ export default function ProposalVoteSection({
 
       {/* Vote Counts */}
       <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-[var(--foreground)] w-20">Yes</span>
+      {[
+          { voteType: 'YES', count: displayedVoteCounts.YES, colorClass: 'bg-green-500' },
+          { voteType: 'NO', count: displayedVoteCounts.NO, colorClass: 'bg-red-500' },
+          { voteType: 'ABSTAIN', count: displayedVoteCounts.ABSTAIN, colorClass: 'bg-gray-500' },
+      ].map((bar) => (
+          <div key={bar.voteType} className="flex items-center gap-3">
+          <span className="text-sm font-medium text-[var(--foreground)] w-20">
+              {VOTE_TYPE_LABELS[bar.voteType]}
+          </span>
           <div className="flex-1 bg-[var(--background)] rounded-full h-6 overflow-hidden border border-[var(--border)]">
-            <div
-              className="bg-green-500 h-full transition-all duration-300"
-              style={{ width: totalVotes > 0 ? `${(voteCounts.YES / totalVotes) * 100}%` : '0%' }}
-            />
+              <div
+              className={`${bar.colorClass} h-full transition-all duration-300`}
+              style={{
+                  width: totalDisplayedVotes > 0
+                  ? `${(bar.count / totalDisplayedVotes) * 100}%`
+                  : '0%',
+              }}
+              />
           </div>
           <span className="text-sm text-[var(--foreground-muted)] w-12 text-right">
-            {voteCounts.YES}
+              {bar.count}
           </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-[var(--foreground)] w-20">No</span>
-          <div className="flex-1 bg-[var(--background)] rounded-full h-6 overflow-hidden border border-[var(--border)]">
-            <div
-              className="bg-red-500 h-full transition-all duration-300"
-              style={{ width: totalVotes > 0 ? `${(voteCounts.NO / totalVotes) * 100}%` : '0%' }}
-            />
           </div>
-          <span className="text-sm text-[var(--foreground-muted)] w-12 text-right">
-            {voteCounts.NO}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-[var(--foreground)] w-20">Abstain</span>
-          <div className="flex-1 bg-[var(--background)] rounded-full h-6 overflow-hidden border border-[var(--border)]">
-            <div
-              className="bg-gray-500 h-full transition-all duration-300"
-              style={{ width: totalVotes > 0 ? `${(voteCounts.ABSTAIN / totalVotes) * 100}%` : '0%' }}
-            />
-          </div>
-          <span className="text-sm text-[var(--foreground-muted)] w-12 text-right">
-            {voteCounts.ABSTAIN}
-          </span>
-        </div>
+      ))}
       </div>
 
       {/* Voter List */}
       {votes.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-[var(--foreground)]">Votes ({totalVotes})</h4>
-          <div className="space-y-2 max-h-96 overflow-y-auto">
-            {votes.map((vote) => {
-              const hasSpecialHighlight = vote.hasCleared || vote.forceHighlight
-              const borderClass = vote.hasCleared
+        <div className="flex justify-between items-center">
+            <h4 className="text-sm font-semibold text-[var(--foreground)]">
+            Votes ({displayedVotes.length})
+            </h4>
+            <button
+            onClick={() => setShowClearedOnly(!showClearedOnly)}
+            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                showClearedOnly
+                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                : 'bg-[var(--background)] border border-[var(--border)] hover:bg-[var(--background-hover)]'
+            }`}
+            >
+            Cleared Only
+            </button>
+        </div>
+
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+            {displayedVotes.map((vote) => {
+            const hasSpecialHighlight = vote.hasCleared || vote.forceHighlight;
+            const borderClass = vote.hasCleared
                 ? 'border-yellow-500/50 bg-yellow-500/5'
                 : vote.forceHighlight
                 ? 'border-blue-500/50 bg-blue-500/5'
-                : 'border-[var(--border)]'
+                : 'border-[var(--border)]';
 
-              const tooltipText = vote.forceHighlight && vote.reasoning 
+            const tooltipText = vote.forceHighlight && vote.reasoning 
                 ? vote.reasoning 
                 : vote.hasCleared 
                 ? 'This user has cleared this map'
-                : ''
+                : '';
 
-              return (
+            return (
                 <div
-                  key={vote.id}
-                  className={`flex items-center justify-between p-3 bg-[var(--background-elevated)] border rounded ${borderClass} ${hasSpecialHighlight ? 'cursor-help' : ''}`}
-                  title={tooltipText}
+                key={vote.id}
+                className={`flex items-center justify-between p-3 bg-[var(--background-elevated)] border rounded ${borderClass} ${hasSpecialHighlight ? 'cursor-help' : ''}`}
+                title={tooltipText}
                 >
-                  <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
                     <div className="text-sm font-medium text-[var(--foreground)]">
-                      {vote.user.name || vote.user.discordUsername || 'Unknown'}
+                    {vote.user.name || vote.user.discordUsername || 'Unknown'}
                     </div>
                     {vote.hasCleared && (
-                      <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded text-xs">
+                    <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded text-xs">
                         Cleared
-                      </span>
+                    </span>
                     )}
                     {vote.forceHighlight && !vote.hasCleared && (
-                      <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-xs">
+                    <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded text-xs">
                         Highlighted
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-medium ${
-                      vote.vote === 'YES' ? 'text-green-400' :
-                      vote.vote === 'NO' ? 'text-red-400' :
-                      'text-gray-400'
-                    }`}>
-                      {VOTE_TYPE_LABELS[vote.vote]}
                     </span>
-                  </div>
+                    )}
                 </div>
-              )
+                <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${
+                    vote.vote === 'YES' ? 'text-green-400' :
+                    vote.vote === 'NO' ? 'text-red-400' :
+                    'text-gray-400'
+                    }`}>
+                    {VOTE_TYPE_LABELS[vote.vote]}
+                    </span>
+                </div>
+                </div>
+            );
             })}
-          </div>
+
+            {displayedVotes.length === 0 && showClearedOnly && (
+            <div className="text-center text-sm text-[var(--foreground-muted)] py-4">
+                No votes from players who have cleared the map.
+            </div>
+            )}
+        </div>
         </div>
       )}
 

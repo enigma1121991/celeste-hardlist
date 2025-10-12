@@ -4,7 +4,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Not Found - Hard Clears',
     description: 'The page you\'re looking for doesn\'t exist. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Not Found - Hard Clears',
       description: 'The page you\'re looking for doesn\'t exist. ',
