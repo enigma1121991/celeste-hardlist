@@ -5,26 +5,6 @@ import { useSession, signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createPlayerClaim } from '@/lib/actions/auth-actions'
-import { Metadata } from 'next'
-
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Claim Player - Hard Clears',
-    description: 'Claim a player by making a claim request. ',
-    themeColor: '#71717a',
-    openGraph: {
-      title: 'Claim Player - Hard Clears',
-      description: 'Claim a player by making a claim request. ',
-      type: 'website',
-      url: 'https://www.hardclears.com/auth/claim-player',
-    },
-    twitter: {
-      card: 'summary',
-      title: 'Claim Player - Hard Clears',
-      description: 'Claim a player by making a claim request. ',
-    },
-  }
-}
 
 export default function ClaimPlayerPage() {
   const { data: session, status } = useSession()
