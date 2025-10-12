@@ -8,7 +8,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Community Proposals - Hard Clears',
     description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Community Proposals - Hard Clears',
       description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',

@@ -101,6 +101,6 @@ body {
 .border-gradient-nav {
     border-image: linear-gradient(90deg, #9900ff 0%, #ff39d2 10%, #fe496a 20%, #ff5435 30%, #FFFF32 40%, #32FF32 50%, 
                                 #32FFA0 60%, #83FFE9 70%, #83FFE9 80%, #4058FC 90%, #8E6EEA 100%) 30;
-    border-width: 0 0 3px 0;
+    border-width: 0 0 2px 0;
     border-style: solid;
 }

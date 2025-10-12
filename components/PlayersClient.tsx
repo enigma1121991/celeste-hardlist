@@ -212,7 +212,16 @@ export default function PlayersClient({ initialPlayers, totalCount }: PlayersCli
 
           return (
             <Link key={player.id} href={`/players/${encodeURIComponent(player.handle)}`}>
-              <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-5 hover:border-[var(--border-hover)] transition-colors h-full flex flex-col">
+              <div 
+            //   className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-5 hover:border-[var(--border-hover)] transition-colors h-full flex flex-col"
+                className="bg-[var(--background-elevated)] border-2 rounded p-5 transition-colors relative border-[var(--border-color-default)] hover:border-[var(--border-color-hover)] h-full flex flex-col"
+                  style={
+                    {
+                      // @ts-ignore
+                      '--border-color-default': `${getStarColor(hardestClear)}40`,
+                      '--border-color-hover': getStarColor(hardestClear),
+                    } as React.CSSProperties
+                  }>
                 <div className="flex items-start justify-between gap-4 mb-2">
                   <div className="mb-2">
                     <h3 className="text-base font-semibold text-[var(--foreground)]">

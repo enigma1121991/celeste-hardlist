@@ -123,7 +123,6 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
     title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
     description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
         proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
-    themeColor: '#71717a',
     openGraph: {
       title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
       description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${

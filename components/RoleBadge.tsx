@@ -37,6 +37,11 @@ export default function RoleBadge({ role, size = "md" }: RoleBadgeProps) {
 
   const config = roleConfig[role]
 
+  if (!config) {
+    console.warn(`Unknown role: ${role}`)
+    return null
+}
+
   return (
     <span
       className={`inline-flex items-center ${sizeClasses[size]} rounded-full font-semibold border ${config.colors}`}

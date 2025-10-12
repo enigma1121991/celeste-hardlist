@@ -70,44 +70,30 @@ export default function MapsClient({ initialMaps, creators, tags }: MapsClientPr
   }, [filters, initialMaps])
 
   return (
-    <div className="relative">
-      {/* Initial Loading Animation */}
+    <div className="flex justify-center items-start gap-8 container mx-auto px-4">
       {initialLoad && (
         <div className="fixed inset-0 bg-[var(--background)]/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 border-4 border-[var(--border)] rounded-full"></div>
-              <div className="absolute inset-0 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-            <p className="text-lg text-[var(--foreground)] animate-pulse">
-              Loading maps...
-            </p>
-          </div>
         </div>
       )}
 
-      {/* Fixed filter sidebar - centered in left margin */}
-      <aside className="fixed top-0 bottom-0 pointer-events-none z-10 w-1/5 px-10">
-        <div className="h-full flex items-center">
-          <div className="w-full max-h-[80vh] overflow-y-auto pointer-events-auto">
-            <FilterSidebar
-              onFilterChange={handleFilterChange}
-              creators={creators}
-              tags={tags}
-            />
-          </div>
-        </div>
+      {/* --- Sidebar --- */}
+      <aside className="sticky top-3/8 w-1/4 overflow-y-auto">
+        <FilterSidebar
+          onFilterChange={handleFilterChange}
+          creators={creators}
+          tags={tags}
+        />
       </aside>
 
-      {/* Main content - centered */}
-      <div className="w-4/5 ml-auto pr-30">
+      {/* --- Main Content --- */}
+      <div className="w-1/2">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">
             Maps
           </h1>
           <p className="text-sm text-[var(--foreground-muted)]">
-            {filteredMaps.length} map{filteredMaps.length !== 1 ? 's' : ''}
+            {filteredMaps.length} map{filteredMaps.length !== 1 ? 's' : ''} (sorted alphabetically in tiers)
           </p>
         </div>
 
@@ -125,6 +111,8 @@ export default function MapsClient({ initialMaps, creators, tags }: MapsClientPr
           </div>
         )}
       </div>
+
+      <div className="w-1/4"></div>
     </div>
   )
 }

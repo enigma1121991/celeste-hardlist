@@ -8,7 +8,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Verification Queue - Hard Clears',
     description: 'Review and verify clear submissions. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Verification Queue - Hard Clears',
       description: 'Review and verify clear submissions. ',
@@ -30,7 +29,7 @@ export default async function VerificationQueuePage() {
   
   // Only fetch PENDING runs by default for performance
   // Verifiers primarily need to see what needs review
-  const runs = await prisma.run.findMany({
+  const rawRuns = await prisma.run.findMany({
     where: {
       verifiedStatus: 'PENDING', // Only load pending runs
     },
@@ -52,6 +51,24 @@ export default async function VerificationQueuePage() {
     orderBy: { createdAt: 'desc' },
     take: pageSize, // Load first page (50 runs)
   })
+
+  const runs = rawRuns.map(run => ({
+    ...run,
+    verificationActions: run.verificationActions.map(action => ({
+      ...action,
+      verifier: action.verifier
+        ? {
+            name: action.verifier.name,
+            discordUsername: action.verifier.discordUsername,
+            role: action.verifier.role.toString(),
+          }
+        : {
+            name: null,
+            discordUsername: null,
+            role: '',
+          },
+    })),
+  }))
 
   // Get unique maps and players for filter dropdowns
   const maps = await prisma.map.findMany({

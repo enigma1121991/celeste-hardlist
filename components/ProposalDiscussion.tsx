@@ -3,9 +3,12 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ProposalComment } from '@prisma/client'
+import { UserRole } from '@prisma/client'
+import RoleBadge from '@/components/RoleBadge'
 
 type CommentWithUser = ProposalComment & {
   user: {
+    role: UserRole
     id: string
     name: string | null
     image: string | null
@@ -126,8 +129,9 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply }: Com
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-[var(--foreground)]">
-              {comment.user.name || comment.user.discordUsername || 'Unknown'}
+              {comment.user.name || comment.user.discordUsername || 'Unknown'} 
             </span>
+            {comment.user && <RoleBadge role={comment.user.role} size="sm" />}
             <span className="text-xs text-[var(--foreground-muted)]">
               {formatDate(comment.createdAt)}
             </span>

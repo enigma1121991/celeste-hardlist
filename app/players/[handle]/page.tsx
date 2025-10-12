@@ -12,31 +12,23 @@ import { Metadata } from 'next'
 export async function generateMetadata({params}: { params: { handle: string }}): Promise<Metadata> {
   const player = await getPlayerByHandle(decodeURIComponent(params.handle))
 
+  if (!player) {
+    notFound()
+  }
+
   const stats = calculatePlayerStats(player.runs)
 
   const hardestClear = [...player.runs]
     .filter(run => run.map.stars && run.map.stars > 0)
     .sort((a, b) => (b.map.stars || 0) - (a.map.stars || 0))[0]
 
-  const getStarColor = (stars: number): string => {
-    const colorMap: Record<number, string> = {
-      1: '#9900ff',
-      2: '#ff39d2',
-      3: '#fe496a',
-      4: '#ff5435',
-      5: '#ffff32',
-      6: '#32ff32',
-      7: '#32ffa0',
-      8: '#32ffff',
-    }
-    return colorMap[stars] || '#71717a'
+  if (!hardestClear.map.stars) {
+    notFound()
   }
 
   return {
     title: `${player.handle} - Profile - Hard Clears`,
     description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
-    themeColor: `${getStarColor(hardestClear.map.stars)}`,
-    // image: TODO: Player PFP
     openGraph: {
       title: `${player.handle} - Profile - Hard Clears`,
       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
@@ -145,7 +137,7 @@ export default async function PlayerPage({
               )}
               {player.twitchUrl && (
                 <a
-                  href={player.twitchUrl}
+                  href={"https://"+player.twitchUrl} // I have no idea LOL
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-2 py-1.5 bg-[#9146FF] border border-[#9146FF] text-white rounded text-sm font-medium hover:bg-[#772CE8] transition-colors flex items-center gap-2"

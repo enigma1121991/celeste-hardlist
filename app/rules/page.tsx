@@ -4,7 +4,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Rules & Guidelines - Hard Clears',
     description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Rules & Guidelines - Hard Clears',
       description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',

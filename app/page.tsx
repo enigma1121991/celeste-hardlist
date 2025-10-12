@@ -6,19 +6,20 @@ import { Metadata } from 'next'
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Celeste Hardlist - Hard Clears',
+    title: 'Home - Hard Clears',
     description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
-    themeColor: '#71717a',
     openGraph: {
-      title: 'Celeste Hardlist - Hard Clears',
+      title: 'Home - Hard Clears',
       description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
       type: 'website',
       url: 'https://www.hardclears.com/',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
-      title: 'Celeste Hardlist - Hard Clears',
+      title: 'Home - Hard Clears',
       description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }
@@ -100,7 +101,7 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="relative z-10 text-center mb-8">
         <h1 className="text-5xl font-bold mb-3 text-[var(--foreground)] tracking-tight">
-          Celeste Hardlist
+          Hard Clears
         </h1>
         <p className="text-base text-[var(--foreground-muted)] max-w-2xl mx-auto mb-8">
           A comprehensive database tracking Celeste's most challenging custom maps

@@ -7,7 +7,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Player Search - Hard Clears',
     description: 'Search for a player. Loading more as you scroll. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Player Search - Hard Clears',
       description: 'Search for a player. Loading more as you scroll. ',

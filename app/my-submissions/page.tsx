@@ -10,7 +10,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'My Submissions - Hard Clears',
     description: 'Check your submissions to the hard list. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'My Submissions - Hard Clears',
       description: 'Check your submissions to the hard list. ',

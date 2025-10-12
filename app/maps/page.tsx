@@ -7,7 +7,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Maps - Hard Clears',
     description: 'List of all hard list maps, sorted by descending difficulty. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Maps - Hard Clears',
       description: 'List of all hard list maps, sorted by descending difficulty. ',

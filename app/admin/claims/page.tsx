@@ -8,7 +8,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Player Claims - Hard Clears',
     description: 'Review and approve pending player claim requests. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Player Claims - Hard Clears',
       description: 'Review and approve pending player claim requests. ',

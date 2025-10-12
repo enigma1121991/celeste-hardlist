@@ -214,7 +214,7 @@ export default function ProposalsClient({ initialProposals }: ProposalsClientPro
       )}
 
       {!isLoading && sortedProposals.length > 0 && (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {sortedProposals.map((proposal) => (
             <ProposalCard key={proposal.id} proposal={proposal} />
           ))}

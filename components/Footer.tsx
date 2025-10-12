@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-3">
           <div className="text-xs text-[var(--foreground-muted)]">
             <p>
-              by misha &lt;3
+              by misha &lt;3 and codenat :3
             </p>
           </div>
           <div className="text-xs text-[var(--foreground-muted)]">

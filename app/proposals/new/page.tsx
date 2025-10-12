@@ -8,7 +8,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Create a proposal - Hard Clears',
     description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Create a proposal - Hard Clears',
       description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',

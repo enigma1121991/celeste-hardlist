@@ -82,7 +82,14 @@ export default function MapList({ maps }: MapListProps) {
               return (
                 <div
                   key={map.id}
-                  className="bg-[var(--background-elevated)] border border-[var(--border)] rounded hover:border-[var(--border-hover)] transition-colors relative"
+                  className="border-2 rounded transition-colors relative border-[var(--border-color-default)] hover:border-[var(--border-color-hover)]"
+                  style={
+                    {
+                      // @ts-ignore
+                      '--border-color-default': `${getStarColor(stars)}40`,
+                      '--border-color-hover': getStarColor(stars),
+                    } as React.CSSProperties
+                  }
                 >
                   <div className="p-4">
                     <div className="flex items-start gap-4">

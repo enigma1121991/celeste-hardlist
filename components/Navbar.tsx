@@ -54,13 +54,13 @@ export default function Navbar() {
   }, [session])
 
   return (
-    <nav className="fixed bg-[var(--background-elevated)] border-gradient-nav">
+    <nav className="fixed w-full z-[100] bg-[var(--background-elevated)] border-gradient-nav">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className="text-lg font-medium text-[var(--foreground)] tracking-tight">
-              Celeste Hardlist
+            <span className="text-xl font-medium text-[var(--foreground)] tracking-tight">
+              Hard Clears
             </span>
           </Link>
 

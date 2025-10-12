@@ -8,7 +8,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Account Settings - Hard Clears',
     description: 'Manage your profile information and social links. ',
-    themeColor: '#71717a',
     openGraph: {
       title: 'Account Settings - Hard Clears',
       description: 'Manage your profile information and social links. ',

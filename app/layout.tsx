@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"  
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SessionProvider from "@/components/SessionProvider";
+import banner from '@/images/default-background.png'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,10 +17,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: '#dfa1c8',
+}
+
 export const metadata: Metadata = {
-  title: "Celeste Hardlist",
-  description: "Database of Celeste's hardest maps and most skilled players",
-};
+  icons: {
+    icon: [
+      { url: "/favicon_io/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon_io/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon_io/favicon.ico" },
+    ],
+    apple: "/favicon_io/apple-touch-icon.png",
+  },
+  manifest: "/favicon_io/site.webmanifest",
+}
+
 
 export default function RootLayout({
   children,
@@ -28,18 +41,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="apple-touch-icon" sizes="180x180" href="./favicon_io/apple-touch-icon.png"/>
-        <link rel="icon" type="image/png" sizes="16x16" href="./favicon_io/favicon-32x32.png"/>
-        <link rel="icon" type="image/png" sizes="16x16" href="./favicon_io/favicon-16x16.png"/>
-        <link rel="manifest" href="./favicon_io/site.webmanifest"/>
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <SessionProvider>
+         <div 
+            style={{ backgroundImage: `url(${banner.src})` }}
+            className="w-full fixed inset-0 top-10 -z-10 bg-contain bg-center bg-repeat"
+          />
           <Navbar />
-          <main className="flex-1 py-8">
+          <main className="flex-1 py-24">
             {children}
           </main>
           <Footer />

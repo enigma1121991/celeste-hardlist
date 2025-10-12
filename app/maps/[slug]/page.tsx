@@ -8,26 +8,14 @@ import { Metadata } from 'next'
 
 export async function generateMetadata({ params }: MapPageProps): Promise<Metadata> {
   const map = await getMapBySlug(params.slug)
-  const clearCount = map.runs.length
 
-  const getStarColor = (stars: number): string => {
-    const colorMap: Record<number, string> = {
-      1: '#9900ff',
-      2: '#ff39d2',
-      3: '#fe496a',
-      4: '#ff5435',
-      5: '#ffff32',
-      6: '#32ff32',
-      7: '#32ffa0',
-      8: '#32ffff',
-    }
-    return colorMap[stars] || '#71717a'
-  }
+  if (!map) notFound();
+
+  const clearCount = map.runs.length
 
   return {
     title: `${map.stars}★ - ${map.name} - Hard Clears`,
     description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
-    themeColor: `${getStarColor(map.stars)}`,
     openGraph: {
       title: `${map.stars}★ - ${map.name} - Hard Clears`,
       description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
