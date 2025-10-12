@@ -96,7 +96,7 @@ export default async function ClaimPendingPage({
           </h2>
           <ol className="list-decimal list-inside space-y-2 text-[var(--foreground-muted)]">
             <li>Take a screenshot of the claim information above</li>
-            <li>Send the screenshot to a Hardlist admin or moderator via Discord DM</li>
+            <li>Send the screenshot to @codenat_ or @mewwmeww on discord</li>
             <li>Wait for an admin to review and approve your claim</li>
             <li>Once approved, you'll be able to access your player profile settings</li>
           </ol>
