@@ -5,7 +5,6 @@ import { Analytics } from "@vercel/analytics/next"
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import SessionProvider from "@/components/SessionProvider";
-import banner from '@/images/default-background.png'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,7 +45,7 @@ export default function RootLayout({
       >
         <SessionProvider>
          <div 
-            style={{ backgroundImage: `url(${banner.src})` }}
+            style={{ backgroundImage: 'url("/default-background.png")' }}
             className="w-full fixed inset-0 top-10 -z-10 bg-contain bg-center bg-repeat"
           />
           <Navbar />

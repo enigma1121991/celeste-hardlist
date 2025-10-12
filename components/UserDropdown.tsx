@@ -52,7 +52,7 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
       >
         {user.image ? (
           <Image
-            src={user.image}
+            src={user.image.split("url=")[1].split("&")[0]}
             alt={''}
             width={24}
             height={24}
@@ -167,4 +167,3 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
     </div>
   )
 }
-
