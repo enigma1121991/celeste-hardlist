@@ -133,22 +133,22 @@ export function getRunTypeBadge(type: RunType): {
     { label: string; icon: string; color: string }
   > = {
     FULL_CLEAR_VIDEO: {
-      label: 'Full Clear (Video)',
+      label: 'Full Clear',
       icon: '⭐',
       color: 'bg-gradient-to-r from-yellow-400 to-yellow-600',
     },
     FULL_CLEAR: {
-      label: 'Full Clear',
+      label: 'Full Clear (No Video)',
       icon: '⭐',
       color: 'bg-gradient-to-r from-gray-300 to-gray-500',
     },
     CLEAR_VIDEO: {
-      label: 'Clear (Video)',
+      label: 'Clear',
       icon: '🏅',
       color: 'bg-gradient-to-r from-orange-400 to-orange-600',
     },
     CLEAR: {
-      label: 'Clear',
+      label: 'Clear (No Video)',
       icon: '🏅',
       color: 'bg-gradient-to-r from-gray-400 to-gray-600',
     },
