@@ -131,6 +131,11 @@ export const RUN_TYPE_LABELS: Record<string, string> = {
   FULL_CLEAR_GB: 'Full Clear (Golden)',
   CLEAR_GB: 'Clear (Golden)',
   CREATOR_CLEAR: 'Creator Clear',
+  CREATOR_FULL_CLEAR: 'Creator Full Clear',
+  CREATOR_GOLDEN: 'Creator Golden',
+  CREATOR_FULL_CLEAR_GOLDEN: 'Creator Full Clear (Golden)',
+  GOLDEN_AND_FULL_CLEAR: 'Golden (Regular Clear) & Full Clear',
+  CLEAR_VIDEO_AND_FC: 'Clear Video & FC (No Video)',
   ALL_DEATHLESS_SEGMENTS: 'All Deathless Segments',
   UNKNOWN: 'Unknown',
 }

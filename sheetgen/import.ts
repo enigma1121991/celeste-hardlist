@@ -39,7 +39,6 @@ function parseArgs(): ImportArgs {
   let sheetName: string | undefined
   let snapshotsDir = './snapshots'
   let dryRun = false
-  
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--csv' && i + 1 < args.length) {
       csv = args[i + 1]
@@ -64,17 +63,10 @@ function parseArgs(): ImportArgs {
     console.error('  npm run import -- --sheet <google-sheets-url> [--sheet-name "Sheet1"] [--dry-run]')
     console.error('')
     console.error('Options:')
-    console.error('  --dry-run    Show what would be changed without modifying the database')
+    console.error('  --dry-run    Show what would be changed without modifying the database or filesystem')
     process.exit(1)
   }
   return { csv, sheet, sheetName, snapshotsDir, dryRun }
-}
-
-function getStarRatingFromHeader(firstColumn: string): number | null {
-  if (!firstColumn) return null
-  const starCount = (firstColumn.match(/⭐/g) || []).length
-  if (starCount > 0) return null
-  return null
 }
 
 function isHeaderOrSummaryRow(firstColumn: string): boolean {
@@ -129,10 +121,18 @@ async function generateUniqueSlug(mapName: string): Promise<string> {
   return `${baseSlug}-${hash}`
 }
 
+function arraysEqualUnordered(a: string[] | null | undefined, b: string[] | null | undefined): boolean {
+  const aa = Array.isArray(a) ? [...a].sort() : []
+  const bb = Array.isArray(b) ? [...b].sort() : []
+  if (aa.length !== bb.length) return false
+  for (let i = 0; i < aa.length; i++) if (aa[i] !== bb[i]) return false
+  return true
+}
+
 async function runImport() {
   const startTime = Date.now()
   const args = parseArgs()
-  const { csv: csvSource, sheet: sheetSource, sheetName, snapshotsDir } = args
+  const { csv: csvSource, sheet: sheetSource, sheetName, snapshotsDir, dryRun } = args
   console.log('\nStarting Celeste Hardlist Import')
   let content: string
   let sourceUrl: string
@@ -162,13 +162,15 @@ async function runImport() {
   const contentBytes = Buffer.byteLength(content, 'utf-8')
   console.log(`Content size: ${contentBytes} bytes`)
   console.log(`SHA256: ${contentHash}`)
-  const existingSnapshot = await prisma.snapshot.findUnique({ where: { sha256: contentHash } })
-
+  if (!dryRun) {
   await mkdir(snapshotsDir, { recursive: true })
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const snapshotPath = join(snapshotsDir, `${timestamp}.csv`)
   await writeFile(snapshotPath, content, 'utf-8')
-  console.log(`Saved snapshot: ${snapshotPath}`)
+    console.log(`Saved snapshot: ${snapshotPath}`)
+  } else {
+    console.log('Dry run: skipping snapshot file write')
+  }
   console.log('\nParsing data...')
   if (records.length === 0) {
     records = parse(content, {
@@ -235,49 +237,40 @@ async function runImport() {
   if (skippedRows.length > 0) console.log(`   Skipped ${skippedRows.length} header/summary rows`)
   console.log(`   Parsed ${parsedRows.length} valid map rows`)
   console.log('')
-  if (args.dryRun) {
-    console.log('DRY RUN - Analyzing differences with database (no changes will be made)...')
-  } else {
-    console.log('Analyzing differences with database...')
-  }
-  
-  // Collect all unique entities from parsed data
+  console.log(dryRun ? 'DRY RUN - Analyzing differences (no changes will be made)...' : 'Analyzing differences with database...')
   const uniqueCreators = new Set<string>()
   const uniquePlayers = new Set<string>()
   const mapNames = new Set<string>()
-  
   for (const row of parsedRows) {
     uniqueCreators.add(row.creatorName)
     mapNames.add(row.mapName)
     Object.keys(row.playerData).forEach(p => uniquePlayers.add(p))
   }
-
-  // Fetch existing data from database
   console.log('   Fetching existing data...')
   const [existingCreators, existingPlayers, existingMaps, existingRuns] = await Promise.all([
     prisma.creatorProfile.findMany({
-      where: { name: { in: [...uniqueCreators] } },
-      select: { id: true, name: true },
+    where: { name: { in: [...uniqueCreators] } },
+    select: { id: true, name: true },
     }),
     prisma.player.findMany({
-      where: { handle: { in: [...uniquePlayers] } },
-      select: { id: true, handle: true },
+    where: { handle: { in: [...uniquePlayers] } },
+    select: { id: true, handle: true },
     }),
     prisma.map.findMany({
       where: { name: { in: [...mapNames] } },
-      select: { 
-        id: true, 
-        name: true, 
-        stars: true, 
-        gmColor: true, 
-        gmTier: true, 
-        canonicalVideoUrl: true 
+      select: {
+        id: true,
+        name: true,
+        stars: true,
+        gmColor: true,
+        gmTier: true,
+        canonicalVideoUrl: true,
       },
     }),
     prisma.run.findMany({
       where: {
         map: { name: { in: [...mapNames] } },
-        player: { handle: { in: [...uniquePlayers] } }
+        player: { handle: { in: [...uniquePlayers] } },
       },
       select: {
         id: true,
@@ -285,72 +278,51 @@ async function runImport() {
         playerId: true,
         type: true,
         evidenceUrls: true,
+        verifiedStatus: true,
         map: { select: { name: true } },
-        player: { select: { handle: true } }
-      }
-    })
+        player: { select: { handle: true } },
+      },
+    }),
   ])
-
-  // Create lookup maps
   const creatorIdByName = new Map(existingCreators.map(r => [r.name, r.id]))
   const playerIdByHandle = new Map(existingPlayers.map(r => [r.handle, r.id]))
   const mapIdByName = new Map(existingMaps.map(m => [m.name, m.id]))
   const existingMapByName = new Map(existingMaps.map(m => [m.name, m]))
-  
-  // Track what needs to be created/updated
   const creatorsToCreate: string[] = []
   const playersToCreate: string[] = []
   const mapsToCreate: any[] = []
   const mapsToUpdate: { id: string; data: any }[] = []
-  const runsToCreate: any[] = []
-  const runsToUpdate: { id: string; data: any }[] = []
-
-  // Find missing creators
   for (const creatorName of uniqueCreators) {
-    if (!creatorIdByName.has(creatorName)) {
-      creatorsToCreate.push(creatorName)
-    }
+    if (!creatorIdByName.has(creatorName)) creatorsToCreate.push(creatorName)
   }
-
-  // Find missing players
   for (const playerHandle of uniquePlayers) {
-    if (!playerIdByHandle.has(playerHandle)) {
-      playersToCreate.push(playerHandle)
-    }
+    if (!playerIdByHandle.has(playerHandle)) playersToCreate.push(playerHandle)
   }
-
-  // Find missing maps and maps that need updates
   for (const row of parsedRows) {
     const existingMap = existingMapByName.get(row.mapName)
     const gm = row.stars ? getGMFromStars(row.stars) : null
-    
     if (!existingMap) {
-      // Map doesn't exist, need to create it
-      // Check if creator exists or will be created
       const creatorExists = creatorIdByName.has(row.creatorName)
       const creatorWillBeCreated = creatorsToCreate.includes(row.creatorName)
-      
       if (creatorExists || creatorWillBeCreated) {
-        const slug = await generateUniqueSlug(row.mapName)
-        mapsToCreate.push({
-          name: row.mapName,
-          slug,
-          creatorId: creatorExists ? creatorIdByName.get(row.creatorName) : null, // Will be resolved later
-          creatorName: row.creatorName, // Store creator name for later resolution
-          stars: row.stars,
-          gmColor: gm?.color ?? null,
-          gmTier: gm?.tier ?? null,
-          canonicalVideoUrl: row.canonicalVideoUrl,
-        })
-      }
+      const slug = await generateUniqueSlug(row.mapName)
+      mapsToCreate.push({
+        name: row.mapName,
+        slug,
+          creatorId: creatorExists ? creatorIdByName.get(row.creatorName) : null,
+          creatorName: row.creatorName,
+        stars: row.stars,
+        gmColor: gm?.color ?? null,
+        gmTier: gm?.tier ?? null,
+        canonicalVideoUrl: row.canonicalVideoUrl,
+      })
+    }
     } else {
-      // Map exists, check if it needs updating
-      const needsUpdate = 
+      const needsUpdate =
         existingMap.stars !== row.stars ||
         existingMap.gmColor !== (gm?.color ?? null) ||
         existingMap.gmTier !== (gm?.tier ?? null) ||
         existingMap.canonicalVideoUrl !== row.canonicalVideoUrl
-      
       if (needsUpdate) {
         mapsToUpdate.push({
           id: existingMap.id,
@@ -359,98 +331,48 @@ async function runImport() {
             gmColor: gm?.color ?? null,
             gmTier: gm?.tier ?? null,
             canonicalVideoUrl: row.canonicalVideoUrl,
-          }
+          },
         })
       }
     }
   }
-
-  // Create missing entities first
   if (creatorsToCreate.length > 0) {
-    if (args.dryRun) {
-      console.log(`Would create ${creatorsToCreate.length} new creators:`)
-    } else {
-      console.log(`Creating ${creatorsToCreate.length} new creators:`)
-    }
+    console.log(dryRun ? `Would create ${creatorsToCreate.length} new creators:` : `Creating ${creatorsToCreate.length} new creators:`)
     creatorsToCreate.forEach(name => console.log(`      - ${name}`))
-    
-    if (!args.dryRun) {
-      await prisma.creatorProfile.createMany({
-        data: creatorsToCreate.map(name => ({ name })),
-        skipDuplicates: true,
-      })
-      // Refresh creator lookup
-      const newCreators = await prisma.creatorProfile.findMany({
-        where: { name: { in: creatorsToCreate } },
-        select: { id: true, name: true },
-      })
+    if (!dryRun) {
+      await prisma.creatorProfile.createMany({ data: creatorsToCreate.map(name => ({ name })), skipDuplicates: true })
+      const newCreators = await prisma.creatorProfile.findMany({ where: { name: { in: creatorsToCreate } }, select: { id: true, name: true } })
       newCreators.forEach(c => creatorIdByName.set(c.name, c.id))
     }
   }
-
   if (playersToCreate.length > 0) {
-    if (args.dryRun) {
-      console.log(`Would create ${playersToCreate.length} new players:`)
-    } else {
-      console.log(`Creating ${playersToCreate.length} new players:`)
-    }
+    console.log(dryRun ? `Would create ${playersToCreate.length} new players:` : `Creating ${playersToCreate.length} new players:`)
     playersToCreate.forEach(handle => console.log(`      - ${handle}`))
-    
-    if (!args.dryRun) {
-      await prisma.player.createMany({
-        data: playersToCreate.map(handle => ({ handle })),
-        skipDuplicates: true,
-      })
-      // Refresh player lookup
-      const newPlayers = await prisma.player.findMany({
-        where: { handle: { in: playersToCreate } },
-        select: { id: true, handle: true },
-      })
+    if (!dryRun) {
+      await prisma.player.createMany({ data: playersToCreate.map(handle => ({ handle })), skipDuplicates: true })
+      const newPlayers = await prisma.player.findMany({ where: { handle: { in: playersToCreate } }, select: { id: true, handle: true } })
       newPlayers.forEach(p => playerIdByHandle.set(p.handle, p.id))
     }
   }
-
   if (mapsToCreate.length > 0) {
-    if (args.dryRun) {
-      console.log(`Would create ${mapsToCreate.length} new maps:`)
-    } else {
-      console.log(`Creating ${mapsToCreate.length} new maps:`)
-    }
+    console.log(dryRun ? `Would create ${mapsToCreate.length} new maps:` : `Creating ${mapsToCreate.length} new maps:`)
     mapsToCreate.forEach(map => console.log(`      - ${map.name} (${map.stars}⭐)`))
-    
-    if (!args.dryRun) {
-      // Resolve creator IDs for maps that need them
+    if (!dryRun) {
       const mapsWithResolvedCreators = mapsToCreate.map(map => {
         if (map.creatorId === null && map.creatorName) {
           const resolvedCreatorId = creatorIdByName.get(map.creatorName)
-          if (!resolvedCreatorId) {
-            throw new Error(`Creator "${map.creatorName}" not found for map "${map.name}"`)
-          }
+          if (!resolvedCreatorId) throw new Error(`Creator "${map.creatorName}" not found for map "${map.name}"`)
           return { ...map, creatorId: resolvedCreatorId }
         }
         return map
       })
-      
-      await prisma.map.createMany({ 
-        data: mapsWithResolvedCreators.map(({ creatorName, ...map }) => map), 
-        skipDuplicates: true 
-      })
-      // Refresh map lookup
-      const newMaps = await prisma.map.findMany({
-        where: { name: { in: mapsToCreate.map(m => m.name) } },
-        select: { id: true, name: true },
-      })
+      await prisma.map.createMany({ data: mapsWithResolvedCreators.map(({ creatorName, ...map }) => map), skipDuplicates: true })
+      const newMaps = await prisma.map.findMany({ where: { name: { in: mapsToCreate.map(m => m.name) } }, select: { id: true, name: true } })
       newMaps.forEach(m => mapIdByName.set(m.name, m.id))
     }
   }
-
-  // Update existing maps
   if (mapsToUpdate.length > 0) {
-    if (args.dryRun) {
-      console.log(`Would update ${mapsToUpdate.length} existing maps:`)
-    } else {
-      console.log(`Updating ${mapsToUpdate.length} existing maps:`)
-    }
+    console.log(dryRun ? `Would update ${mapsToUpdate.length} existing maps:` : `Updating ${mapsToUpdate.length} existing maps:`)
     for (const update of mapsToUpdate) {
       const map = existingMaps.find(m => m.id === update.id)
       const changes = []
@@ -460,236 +382,158 @@ async function runImport() {
       if (map?.canonicalVideoUrl !== update.data.canonicalVideoUrl) changes.push(`video: ${map?.canonicalVideoUrl || 'none'} → ${update.data.canonicalVideoUrl || 'none'}`)
       console.log(`      - ${map?.name}: ${changes.join(', ')}`)
     }
-    
-    if (!args.dryRun) {
+    if (!dryRun) {
       const limit = pLimit(16)
-      await Promise.all(
-        mapsToUpdate.map(update => 
-          limit(() => prisma.map.update({
-            where: { id: update.id },
-            data: update.data,
-          }))
-        )
-      )
+      await Promise.all(mapsToUpdate.map(update => limit(() => prisma.map.update({ where: { id: update.id }, data: update.data }))))
     }
   }
-
-  // Process runs - find what needs to be created/updated
   console.log('   Analyzing runs...')
-  const existingRunsByKey = new Map<string, any>()
-  for (const run of existingRuns) {
-    const key = `${run.mapId}-${run.playerId}-${run.type}`
-    existingRunsByKey.set(key, run)
-  }
-
+  const desiredByPair: Map<string, { mapName: string; playerHandle: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string }> = new Map()
   for (const row of parsedRows) {
-    // Check if map exists or will be created
-    const mapExists = mapIdByName.has(row.mapName)
-    const mapWillBeCreated = mapsToCreate.some(m => m.name === row.mapName)
-    
-    if (!mapExists && !mapWillBeCreated) continue
-
     for (const [playerHandle, cellValue] of Object.entries(row.playerData)) {
-      // Check if player exists or will be created
-      const playerExists = playerIdByHandle.has(playerHandle)
-      const playerWillBeCreated = playersToCreate.includes(playerHandle)
-      
-      if (!playerExists && !playerWillBeCreated) continue
-
       const runData = mapCellToRunType(cellValue)
       if (!runData) continue
-
-      // For analysis phase, we can't determine the exact key without IDs
-      // So we'll create runs for all valid combinations
-      if (mapExists && playerExists) {
-        // Both exist, check for existing run
-        const mapId = mapIdByName.get(row.mapName)!
-        const playerId = playerIdByHandle.get(playerHandle)!
-        const key = `${mapId}-${playerId}-${runData.type}`
-        const existingRun = existingRunsByKey.get(key)
-
-        if (!existingRun) {
-          // Run doesn't exist, create it
-          runsToCreate.push({
-            mapId,
-            playerId,
-            type: runData.type,
-            evidenceUrls: runData.evidenceUrls,
-            verifiedStatus: 'VERIFIED',
-          })
-        } else {
-          // Run exists, check if evidenceUrls are different
-          const existingUrls = existingRun.evidenceUrls || []
-          const newUrls = runData.evidenceUrls || []
-          const urlsChanged = existingUrls.length !== newUrls.length || 
-            !existingUrls.every((url: string, i: number) => url === newUrls[i])
-          
-          if (urlsChanged) {
-            runsToUpdate.push({
-              id: existingRun.id,
-              data: { evidenceUrls: runData.evidenceUrls }
-            })
+      desiredByPair.set(`${row.mapName}|||${playerHandle}`, {
+        mapName: row.mapName,
+        playerHandle,
+        type: runData.type,
+        evidenceUrls: runData.evidenceUrls ?? null,
+        verifiedStatus: 'VERIFIED',
+      })
+    }
+  }
+  const runIndex = new Map<string, { rows: typeof existingRuns; items: typeof existingRuns }>()
+  for (const r of existingRuns) {
+    const key = `${r.map.name}|||${r.player.handle}`
+    if (!runIndex.has(key)) runIndex.set(key, { rows: [], items: [] } as any)
+    ;(runIndex.get(key)!.items as any).push(r)
+  }
+  const toCreate: Array<{ mapId: string; playerId: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string }> = []
+  const toReplace: Array<{
+    key: string
+    deleteCount: number
+    create: { mapId: string; playerId: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string }
+  }> = []
+  const unresolvedPairs: Array<{ mapName: string; playerHandle: string; reason: string }> = []
+  for (const [key, desired] of desiredByPair.entries()) {
+    const { mapName, playerHandle, type, evidenceUrls, verifiedStatus } = desired
+    const mapId = mapIdByName.get(mapName)
+    const playerId = playerIdByHandle.get(playerHandle)
+    if (!mapId || !playerId) {
+      unresolvedPairs.push({ mapName, playerHandle, reason: !mapId ? 'map not found' : 'player not found' })
+      continue
+    }
+    const existingForPair = runIndex.get(key)?.items ?? []
+    if (existingForPair.length === 0) {
+      toCreate.push({ mapId, playerId, type, evidenceUrls, verifiedStatus })
+      continue
+    }
+    const exactlyOne = existingForPair.length === 1
+    const sameType = exactlyOne ? existingForPair[0].type === type : false
+    const sameEvidence = exactlyOne ? arraysEqualUnordered(existingForPair[0].evidenceUrls as any, evidenceUrls as any) : false
+    const sameStatus = exactlyOne ? (existingForPair[0].verifiedStatus || 'VERIFIED') === verifiedStatus : false
+    const matches = exactlyOne && sameType && sameEvidence && sameStatus
+    if (!matches) {
+      toReplace.push({
+        key,
+        deleteCount: existingForPair.length,
+        create: { mapId, playerId, type, evidenceUrls, verifiedStatus },
+      })
+    }
+  }
+  if (unresolvedPairs.length > 0) {
+    console.log('   Some sheet pairs reference maps/players that do not yet exist:')
+    unresolvedPairs.forEach(p => console.log(`      - ${p.mapName} / ${p.playerHandle} (${p.reason})`))
+    if (!dryRun) {
+      if (playersToCreate.length > 0 || mapsToCreate.length > 0) {
+        const newlyPlayers = await prisma.player.findMany({ where: { handle: { in: playersToCreate } }, select: { id: true, handle: true } })
+        newlyPlayers.forEach(p => playerIdByHandle.set(p.handle, p.id))
+        const newlyMaps = await prisma.map.findMany({ where: { name: { in: mapsToCreate.map(m => m.name) } }, select: { id: true, name: true } })
+        newlyMaps.forEach(m => mapIdByName.set(m.name, m.id))
+        const stillUnresolved: string[] = []
+        for (const u of unresolvedPairs) {
+          const mapId = mapIdByName.get(u.mapName)
+          const playerId = playerIdByHandle.get(u.playerHandle)
+          if (!mapId || !playerId) stillUnresolved.push(`${u.mapName} / ${u.playerHandle}`)
+          else {
+            const desired = desiredByPair.get(`${u.mapName}|||${u.playerHandle}`)!
+            const existingForPair = runIndex.get(`${u.mapName}|||${u.playerHandle}`)?.items ?? []
+            if (existingForPair.length === 0) {
+              toCreate.push({ mapId, playerId, type: desired.type, evidenceUrls: desired.evidenceUrls, verifiedStatus: desired.verifiedStatus })
+            } else {
+              toReplace.push({
+                key: `${u.mapName}|||${u.playerHandle}`,
+                deleteCount: existingForPair.length,
+                create: { mapId, playerId, type: desired.type, evidenceUrls: desired.evidenceUrls, verifiedStatus: desired.verifiedStatus },
+              })
+            }
           }
         }
-      } else {
-        // Map or player will be created, so we'll need to create the run
-        // Store the run data for later processing
-        runsToCreate.push({
-          mapName: row.mapName,
-          playerHandle: playerHandle,
-          type: runData.type,
-          evidenceUrls: runData.evidenceUrls,
-          verifiedStatus: 'VERIFIED',
-        })
+        if (stillUnresolved.length > 0) console.log(`   Still unresolved after creates: ${stillUnresolved.length}`)
       }
     }
   }
-
-  // Execute run operations
-  if (runsToCreate.length > 0) {
-    if (args.dryRun) {
-      console.log(`Would create ${runsToCreate.length} new runs:`)
-    } else {
-      console.log(`Creating ${runsToCreate.length} new runs:`)
-    }
-    // Group runs by map for better readability
-    const runsByMap = new Map<string, any[]>()
-    for (const run of runsToCreate) {
-      const mapName = parsedRows.find(r => mapIdByName.get(r.mapName) === run.mapId)?.mapName || 'Unknown'
-      if (!runsByMap.has(mapName)) runsByMap.set(mapName, [])
-      runsByMap.get(mapName)!.push(run)
-    }
-    
-    for (const [mapName, runs] of runsByMap) {
-      console.log(`      - ${mapName}: ${runs.length} runs`)
-      // Show first few runs as examples
-      const examples = runs.slice(0, 3)
-      for (const run of examples) {
-        const playerHandle = Array.from(playerIdByHandle.entries()).find(([_, id]) => id === run.playerId)?.[0] || 'Unknown'
-        console.log(`        • ${playerHandle}: ${run.type}`)
-      }
-      if (runs.length > 3) {
-        console.log(`        ... and ${runs.length - 3} more`)
-      }
-    }
-    
-    if (!args.dryRun) {
-      // Separate runs with IDs from runs that need ID resolution
-      const runsWithIds = runsToCreate.filter(run => 'mapId' in run)
-      const runsNeedingIds = runsToCreate.filter(run => 'mapName' in run)
-      
-      // Process runs that already have IDs
-      if (runsWithIds.length > 0) {
-        const chunk = <T>(arr: T[], n: number) => {
-          const out: T[][] = []
-          for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n))
-          return out
-        }
-        
-        for (const batch of chunk(runsWithIds, 200)) {
-          await prisma.run.createMany({
-            data: batch,
-            skipDuplicates: true,
-          })
-        }
-      }
-      
-      // Process runs that need ID resolution
-      if (runsNeedingIds.length > 0) {
-        const resolvedRuns = runsNeedingIds.map(run => {
-          const mapId = mapIdByName.get(run.mapName)
-          const playerId = playerIdByHandle.get(run.playerHandle)
-          
-          if (!mapId) {
-            throw new Error(`Map "${run.mapName}" not found for run`)
-          }
-          if (!playerId) {
-            throw new Error(`Player "${run.playerHandle}" not found for run`)
-          }
-          
-          return {
-            mapId,
-            playerId,
-            type: run.type,
-            evidenceUrls: run.evidenceUrls,
-            verifiedStatus: run.verifiedStatus,
-          }
-        })
-        
-        const chunk = <T>(arr: T[], n: number) => {
-          const out: T[][] = []
-          for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n))
-          return out
-        }
-        
-        for (const batch of chunk(resolvedRuns, 200)) {
-          await prisma.run.createMany({
-            data: batch,
-            skipDuplicates: true,
-          })
-        }
-      }
-    }
-  }
-
-  if (runsToUpdate.length > 0) {
-    if (args.dryRun) {
-      console.log(`Would update ${runsToUpdate.length} existing runs:`)
-    } else {
-      console.log(`Updating ${runsToUpdate.length} existing runs:`)
-    }
-    // Group updates by map for better readability
-    const updatesByMap = new Map<string, any[]>()
-    for (const update of runsToUpdate) {
-      const run = existingRuns.find(r => r.id === update.id)
-      if (run) {
-        const mapName = run.map.name
-        if (!updatesByMap.has(mapName)) updatesByMap.set(mapName, [])
-        updatesByMap.get(mapName)!.push({ ...update, playerHandle: run.player.handle })
-      }
-    }
-    
-    for (const [mapName, updates] of updatesByMap) {
-      console.log(`      - ${mapName}: ${updates.length} runs`)
-      for (const update of updates.slice(0, 5)) { // Show first 5 as examples
-        const oldUrls = existingRuns.find(r => r.id === update.id)?.evidenceUrls || []
-        const newUrls = update.data.evidenceUrls || []
-        console.log(`        • ${update.playerHandle}: ${oldUrls.length} → ${newUrls.length} evidence URLs`)
-      }
-      if (updates.length > 5) {
-        console.log(`        ... and ${updates.length - 5} more`)
-      }
-    }
-    
-    if (!args.dryRun) {
-      const limit = pLimit(16)
-      await Promise.all(
-        runsToUpdate.map(update => 
-          limit(() => prisma.run.update({
-            where: { id: update.id },
-            data: update.data,
-          }))
-        )
-      )
-    }
-  }
-  if (!args.dryRun) {
-    await prisma.snapshot.create({
-      data: {
-        sourceUrl: sourceUrl,
-        sha256: contentHash,
-        bytes: contentBytes,
-        path: snapshotPath,
-      },
+  if (dryRun) {
+    console.log(`\nDRY RUN CHANGES`)
+    if (mapsToUpdate.length > 0) console.log(`   Update maps: ${mapsToUpdate.length}`)
+    console.log(`   Create runs: ${toCreate.length}`)
+    toCreate.slice(0, 10).forEach(c => {
+      const mapName = Array.from(mapIdByName.entries()).find(([k, v]) => v === c.mapId)?.[0] || c.mapId
+      const playerHandle = Array.from(playerIdByHandle.entries()).find(([k, v]) => v === c.playerId)?.[0] || c.playerId
+      console.log(`      + ${mapName} / ${playerHandle} -> ${c.type}`)
     })
+    if (toCreate.length > 10) console.log(`      ... and ${toCreate.length - 10} more`)
+    console.log(`   Replace runs (delete all existing for pair, then create 1): ${toReplace.length}`)
+    toReplace.slice(0, 10).forEach(r => {
+      const mapName = Array.from(mapIdByName.entries()).find(([k, v]) => v === r.create.mapId)?.[0] || r.create.mapId
+      const playerHandle = Array.from(playerIdByHandle.entries()).find(([k, v]) => v === r.create.playerId)?.[0] || r.create.playerId
+      console.log(`      ~ ${mapName} / ${playerHandle}: delete ${r.deleteCount}, create ${r.create.type}`)
+    })
+    if (toReplace.length > 10) console.log(`      ... and ${toReplace.length - 10} more`)
+  } else {
+    if (mapsToUpdate.length > 0) {
+      console.log('')
+    }
+    console.log(`\nApplying run changes...`)
+  const chunk = <T>(arr: T[], n: number) => {
+    const out: T[][] = []
+    for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n))
+    return out
   }
-  
+    for (const rep of toReplace) {
+      await prisma.run.deleteMany({ where: { mapId: rep.create.mapId, playerId: rep.create.playerId } })
+      await prisma.run.create({
+        data: {
+          mapId: rep.create.mapId,
+          playerId: rep.create.playerId,
+          type: rep.create.type,
+          evidenceUrls: rep.create.evidenceUrls,
+          verifiedStatus: rep.create.verifiedStatus,
+        },
+      })
+    }
+    for (const batch of chunk(toCreate, 200)) {
+      await prisma.run.createMany({ data: batch, skipDuplicates: true })
+    }
+  }
+  if (!dryRun) {
+  await prisma.snapshot.create({
+    data: {
+      sourceUrl: sourceUrl,
+      sha256: contentHash,
+      bytes: contentBytes,
+        path: '',
+    },
+  })
+  } else {
+    console.log('\nDry run: skipping snapshot row insert')
+  }
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
-  
-  if (args.dryRun) {
-    console.log('\nDRY RUN COMPLETE - No changes were made to the database!')
-    console.log(`   Would create: ${creatorsToCreate.length} creators, ${playersToCreate.length} players, ${mapsToCreate.length} maps, ${runsToCreate.length} runs`)
-    console.log(`   Would update: ${mapsToUpdate.length} maps, ${runsToUpdate.length} runs`)
+  if (dryRun) {
+    console.log('\nDRY RUN COMPLETE - No changes were made to the database or filesystem!')
+    console.log(`   Would create: ${creatorsToCreate.length} creators, ${playersToCreate.length} players, ${mapsToCreate.length} maps, ${toCreate.length + toReplace.length} runs`)
+    console.log(`   Would update: ${mapsToUpdate.length} maps`)
+    console.log(`   Would replace runs for: ${toReplace.length} player/map combinations`)
     console.log(`   Analysis time: ${elapsed}s`)
     console.log('')
     console.log('To apply these changes, run the command without --dry-run')
@@ -698,8 +542,8 @@ async function runImport() {
     console.log(`   Creators: ${creatorsToCreate.length} created, ${creatorIdByName.size} total`)
     console.log(`   Players: ${playersToCreate.length} created, ${playerIdByHandle.size} total`)
     console.log(`   Maps: ${mapsToCreate.length} created, ${mapsToUpdate.length} updated`)
-    console.log(`   Runs: ${runsToCreate.length} created, ${runsToUpdate.length} updated`)
-    console.log(`   Time: ${elapsed}s`)
+    console.log(`   Runs: ${toCreate.length} created, ${toReplace.length} replaced`)
+  console.log(`   Time: ${elapsed}s`)
   }
   console.log('')
   await prisma.$disconnect()
