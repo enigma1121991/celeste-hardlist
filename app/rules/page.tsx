@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { Prisma, RunType } from '@prisma/client'
 
 export async function generateMetadata(): Promise<Metadata> {
   return {

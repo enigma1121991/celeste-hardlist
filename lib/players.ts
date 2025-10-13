@@ -177,6 +177,31 @@ export function getRunTypeBadge(type: RunType): {
       icon: '❓',
       color: 'bg-gray-500',
     },
+    CREATOR_FULL_CLEAR: {
+      label: 'Creator Full Clear',
+      icon: '👑',
+      color: 'bg-gradient-to-r from-purple-600 to-purple-800',
+    },
+    CREATOR_GOLDEN: {
+      label: 'Creator Golden',
+      icon: '🍓',
+      color: 'bg-gradient-to-r from-purple-500 to-pink-600',
+    },
+    CREATOR_FULL_CLEAR_GOLDEN: {
+      label: 'Creator Full Clear (Golden)',
+      icon: '👑',
+      color: 'bg-gradient-to-r from-purple-700 to-pink-700',
+    },
+    GOLDEN_AND_FULL_CLEAR: {
+      label: 'Golden & Full Clear',
+      icon: '🍓',
+      color: 'bg-gradient-to-r from-yellow-600 to-amber-700',
+    },
+    CLEAR_VIDEO_AND_FC: {
+      label: 'Clear Video & FC',
+      icon: '🏅',
+      color: 'bg-gradient-to-r from-orange-500 to-red-600',
+    },
   }
 
   return badges[type]
