@@ -13,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',
       type: 'website',
       url: 'https://www.hardclears.com/proposals',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Community Proposals - Hard Clears',
       description: 'Vote on map difficulty changes, new map additions, and rule modifications. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

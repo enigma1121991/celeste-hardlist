@@ -13,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Manage your profile information and social links. ',
       type: 'website',
       url: 'https://www.hardclears.com/account/settings',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Account Settings - Hard Clears',
       description: 'Manage your profile information and social links. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

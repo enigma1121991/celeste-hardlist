@@ -13,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',
       type: 'website',
       url: 'https://www.hardclears.com/proposals/new',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Create a proposal - Hard Clears',
       description: 'Submit a new proposal to add a map, change a map\'s difficulty or to modify a rule. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

@@ -13,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Review and approve pending player claim requests. ',
       type: 'website',
       url: 'https://www.hardclears.com/admin/claims',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Player Claims - Hard Clears',
       description: 'Review and approve pending player claim requests. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

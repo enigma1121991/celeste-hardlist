@@ -10,11 +10,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',
       type: 'website',
       url: 'https://www.hardclears.com/rules',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Rules & Guidelines - Hard Clears',
       description: 'Everything you need to know about submitting maps and clears to Celeste\'s Hardest Maps Clear List. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

@@ -8,11 +8,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title: 'Not Found - Hard Clears',
       description: 'The page you\'re looking for doesn\'t exist. ',
       type: 'website',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Not Found - Hard Clears',
       description: 'The page you\'re looking for doesn\'t exist. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

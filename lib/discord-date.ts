@@ -1,6 +1,6 @@
-export default function discordToTimestamp(url: string): string | null {
+export function discordToTimestamp(url: string) {
     const match = url.match(/\d{17,19}/g);
-    if (!match || !match[1]) return null;
+    if (!match || !match[1]) return { error: 'couldnt find message id' };
 
     // 1420070400000 = Discord Epoch
     return (new Date(Number((BigInt(match[1]) >> BigInt(22)) + BigInt(1420070400000)))).toISOString();

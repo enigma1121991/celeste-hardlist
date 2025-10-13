@@ -12,11 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'List of all hard list maps, sorted by descending difficulty. ',
       type: 'website',
       url: 'https://hardclears.com/maps',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Maps - Hard Clears',
       description: 'List of all hard list maps, sorted by descending difficulty. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

@@ -123,22 +123,30 @@ export async function generateMetadata({ params }: ProposalPageProps): Promise<M
     })
   }
 
+  const formatProposalType = (type: string) => {
+    const proposalMap: { [key: string]: string } = {
+        "CHANGE_RULE": "Rule Change",
+        "MAP_DIFFICULTY": "Map Difficulty Change",
+        "ADD_MAP": "Add a Map",
+    }
+    return proposalMap[type] || "Proposal"
+  }
+
   return {
-    title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
-    description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
-        proposal.closedAt && proposal.closedBy ? `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}` : ""}`,
+    title: `[${formatProposalType(proposal.type)}] ${proposal.title} - Hard Clears`,
+    description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. `,
     openGraph: {
-      title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
-      description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
-        proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
+      title: `[${formatProposalType(proposal.type)}] ${proposal.title} - Hard Clears`,
+      description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. `,
       type: 'website',
       url: `https://hardclears.com/proposals/${proposal.id}`,
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
-      title: `[${proposal.type}] ${proposal.title} - Hard Clears`,
-      description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. ${
-        proposal.closedAt && proposal.closedBy && `Closed by ${proposal.closedBy.name || 'Admin'} on ${formatDate(proposal.closedAt)}`}`,
+      title: `[${formatProposalType(proposal.type)}] ${proposal.title} - Hard Clears`,
+      description: `Proposed by ${proposal.createdBy.name || proposal.createdBy.discordUsername || 'Unknown'}. `,
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

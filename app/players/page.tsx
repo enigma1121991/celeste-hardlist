@@ -12,11 +12,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Search for a player. Loading more as you scroll. ',
       type: 'website',
       url: 'https://hardclears.com/players',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: `Player Search - Hard Clears`,
       description: `Search for a player. Loading more as you scroll. `,
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

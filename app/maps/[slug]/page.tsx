@@ -5,6 +5,9 @@ import { getMapBySlug } from '@/lib/maps'
 import { GM_TIER_LABELS, RUN_TYPE_LABELS } from '@/lib/types'
 import { getYouTubeThumbnailFromUrl, getYouTubeEmbedUrl } from '@/lib/youtube'
 import { Metadata } from 'next'
+import { getStarColor, getGmColorClass } from "@/components/utils/colors"
+import { formatMapName } from "@/components/utils/formatMapName"
+
 
 export async function generateMetadata({ params }: MapPageProps): Promise<Metadata> {
   const map = await getMapBySlug(params.slug)
@@ -21,12 +24,14 @@ export async function generateMetadata({ params }: MapPageProps): Promise<Metada
       description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
       type: 'website',
       url: `https://hardclears.com/players/${map.slug}`,
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
       // image: discord-pfp
     },
     twitter: {
       card: 'summary',
       title: `${map.stars}★ - ${map.name} - Hard Clears`,
       description: `${map.runs.length === 0 ? "No clears yet." : `${clearCount} Total Clear(s).`} `,
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }
@@ -48,28 +53,6 @@ export default async function MapPage({ params }: MapPageProps) {
 
   const tags = (map.tags as string[]) || []
   const clearCount = map.runs.length
-
-  const getGmColorClass = (color: string | null) => {
-    if (!color) return 'bg-gray-500'
-    if (color === 'GREEN') return 'bg-[#16a34a]'
-    if (color === 'YELLOW') return 'bg-[#ca8a04]'
-    if (color === 'RED') return 'bg-[#dc2626]'
-    return 'bg-gray-500'
-  }
-
-  const getStarColor = (stars: number): string => {
-    const colorMap: Record<number, string> = {
-      1: '#9900ff',
-      2: '#ff39d2',
-      3: '#fe496a',
-      4: '#ff5435',
-      5: '#ffff32',
-      6: '#32ff32',
-      7: '#32ffa0',
-      8: '#32ffff',
-    }
-    return colorMap[stars] || '#71717a'
-  }
 
   const embedUrl = map.canonicalVideoUrl ? getYouTubeEmbedUrl(map.canonicalVideoUrl) : null
 
@@ -127,7 +110,7 @@ export default async function MapPage({ params }: MapPageProps) {
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex-1">
             <h1 className="text-4xl font-bold text-[var(--foreground)] tracking-tight mb-2">
-              {map.name}
+              {formatMapName(map.name)}
             </h1>
             <p className="text-lg text-[var(--foreground-muted)]">
               by {map.creator.name}

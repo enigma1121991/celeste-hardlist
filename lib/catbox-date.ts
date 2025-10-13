@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-export async function getCatboxLastModified(url: string): Promise<Date | { error: string }> {
+export async function getCatboxLastModified(url: string): Promise<string | { error: string }> {
     try {
         const response = await axios.head(url);
         const lastModifiedHeader = response.headers['last-modified'];
 
         if (lastModifiedHeader) {
             console.log(`Found 'last-modified' header: ${lastModifiedHeader}`);
-            return new Date(lastModifiedHeader);
+            return new Date(lastModifiedHeader).toISOString();
         } else {
             return {error: "Response didn't contain the date header. "};
         }

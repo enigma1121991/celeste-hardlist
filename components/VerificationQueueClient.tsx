@@ -38,19 +38,22 @@ interface Run {
     handle: string
   }
   submittedBy: {
+    id: string
     name: string | null
     discordUsername: string | null
+    image: string | null
   } | null
   verificationActions: Array<{
     id: string
     action: string
     reason: string | null
+    note: string | null
     createdAt: Date
     verifier: {
       name: string | null
       discordUsername: string | null
       role: string
-    }
+    } | null
   }>
 }
 

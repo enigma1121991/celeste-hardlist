@@ -5,10 +5,10 @@ import { Metadata } from 'next'
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Home - Hard Clears',
-    description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+    description: 'A comprehensive database of Celeste\'s hardest maps, as well as its top players. ',
     openGraph: {
       title: 'Home - Hard Clears',
-      description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+      description: 'A comprehensive database of Celeste\'s hardest maps, as well as its top players.  ',
       type: 'website',
       url: 'https://www.hardclears.com/',
       images: [{url: "/metadata-image.png", width: 256, height: 256}],
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: 'summary',
       title: 'Home - Hard Clears',
-      description: 'A comprehensive database tracking Celeste\'s most challenging custom maps and the players who complete them. ',
+      description: 'A comprehensive database of Celeste\'s hardest maps, as well as its top players.  ',
       images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
@@ -102,8 +102,8 @@ export default async function Home() {
           Hard Clears
         </h1>
         <p className="text-base text-[var(--foreground-muted)] max-w-2xl mx-auto mb-8">
-          A comprehensive database tracking Celeste's most challenging custom maps
-          and the players who complete them.
+          A comprehensive database of Celeste's hardest maps,
+          as well as its top players. 
         </p>
       </section>
 
@@ -115,7 +115,7 @@ export default async function Home() {
           </div>
           <h3 className="text-sm font-semibold mb-1.5 text-[var(--foreground)]">Map Ranking</h3>
           <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
-            Search through challenging maps by difficulty, creator, and tags
+            Search through the hard list maps by difficulty, creator, and tags.
           </p>
         </a>
 
@@ -125,7 +125,7 @@ export default async function Home() {
           </div>
           <h3 className="text-sm font-semibold mb-1.5 text-[var(--foreground)]">Player Profiles</h3>
           <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
-            Track player achievements including clears and deathless segments with detailed stats.
+            Check player profiles and their clears with detailed stats.
           </p>
         </a>
 
@@ -135,7 +135,7 @@ export default async function Home() {
           </div>
           <h3 className="text-sm font-semibold mb-1.5 text-[var(--foreground)]">Proposals & Votes</h3>
           <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
-          Submit changes, add new maps or rules, and let the community decide with time-boxed voting.
+            Submit changes, add new maps and let the community vote on the proposal.
           </p>
         </a>
       </section>

@@ -166,6 +166,6 @@ export const PROPOSAL_STATUS_LABELS: Record<string, string> = {
 export const VOTE_TYPE_LABELS: Record<string, string> = {
   YES: 'Yes',
   NO: 'No',
-  ABSTAIN: 'Abstain',
+  INDIFFERENT: 'Indifferent',
 }
 

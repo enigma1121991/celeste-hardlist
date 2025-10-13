@@ -13,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Review and verify clear submissions. ',
       type: 'website',
       url: 'https://www.hardclears.com/verification-queue',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Verification Queue - Hard Clears',
       description: 'Review and verify clear submissions. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }

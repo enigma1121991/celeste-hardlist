@@ -13,11 +13,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: 'Submit a new clear for your profile to the hard list. ',
       type: 'website',
       url: 'https://www.hardclears.com/submit-run',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: 'Submit Clear - Hard Clears',
       description: 'Submit a new clear for your profile to the hard list. ',
+      images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
 }
