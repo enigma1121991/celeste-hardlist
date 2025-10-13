@@ -4,6 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { MapWithDetails } from '@/lib/types'
 import { GM_TIER_LABELS } from '@/lib/types'
+import { useRouter } from 'next/navigation'
+
 import { getYouTubeThumbnailFromUrl } from '@/lib/youtube'
 
 interface MapListProps {
@@ -18,6 +20,7 @@ export default function MapList({ maps }: MapListProps) {
     if (color === 'RED') return 'bg-[#dc2626]'
     return 'bg-gray-500'
   }
+  const router = useRouter()
 
   const getStarColor = (stars: number): string => {
     const colorMap: Record<number, string> = {
@@ -82,7 +85,7 @@ export default function MapList({ maps }: MapListProps) {
               return (
                 <div
                   key={map.id}
-                  className="border-2 rounded transition-colors relative border-[var(--border-color-default)] hover:border-[var(--border-color-hover)]"
+                  className="border-2 rounded transition-colors relative border-[var(--border-color-default)] hover:border-[var(--border-color-hover)] cursor-pointer select-none"
                   style={
                     {
                       // @ts-ignore
@@ -90,6 +93,15 @@ export default function MapList({ maps }: MapListProps) {
                       '--border-color-hover': getStarColor(stars),
                     } as React.CSSProperties
                   }
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => router.push(`/maps/${map.slug}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      router.push(`/maps/${map.slug}`)
+                    }
+                  }}
                 >
                   <div className="p-4">
                     <div className="flex items-start gap-4">
@@ -100,6 +112,7 @@ export default function MapList({ maps }: MapListProps) {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-shrink-0 w-48 h-28 bg-[var(--background-hover)] rounded overflow-hidden group/thumb relative"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <Image 
                             src={thumbnailUrl} 

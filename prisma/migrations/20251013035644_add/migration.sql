@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "RunType" ADD VALUE 'GOLDEN_AND_FULL_CLEAR';

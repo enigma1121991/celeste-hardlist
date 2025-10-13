@@ -1,6 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { deleteComment } from '@/lib/actions/proposal-actions'
+import { deleteComment, updateComment } from '@/lib/actions/proposal-actions'
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const session = await auth()
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const body = await request.json()
+    const { content } = body
+
+    if (!content || !content.trim()) {
+      return NextResponse.json(
+        { error: 'Content is required' },
+        { status: 400 }
+      )
+    }
+
+    const result = await updateComment(id, content)
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error updating comment:', error)
+    return NextResponse.json(
+      { error: 'Failed to update comment' },
+      { status: 500 }
+    )
+  }
+}
 
 export async function DELETE(
   request: NextRequest,

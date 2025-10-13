@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "RunType" ADD VALUE 'CLEAR_VIDEO_AND_FC';

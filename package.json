@@ -6,28 +6,24 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "postinstall": "prisma generate",
-    "prisma:gen": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "import": "tsx sheetgen/import.ts --sheet https://docs.google.com/spreadsheets/d/1A88F3X2lOQJry-Da2NpnAr-w5WDrkjDtg7Wt0kLCiz8/edit?gid=0#gid=0 --sheet-name Clears",
+    "importdry": "tsx sheetgen/import.ts --sheet https://docs.google.com/spreadsheets/d/1A88F3X2lOQJry-Da2NpnAr-w5WDrkjDtg7Wt0kLCiz8/edit?gid=0#gid=0 --sheet-name Clears --dry-run"
+  
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.0",
     "@prisma/client": "^6.17.0",
-    "@vercel/analytics": "^1.5.0",
-    "axios": "^1.12.2",
-    "bili-api": "^1.10.1",
     "next": "15.5.4",
     "next-auth": "^5.0.0-beta.29",
     "react": "19.1.0",
-    "react-dom": "19.1.0",
-    "ts-node": "^10.9.2"
+    "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "prisma": "^6.17.1",
+    "prisma": "^6.17.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

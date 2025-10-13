@@ -124,6 +124,40 @@ export async function updateProposalStatus(
     return { error: 'Failed to update proposal status' }
   }
 }
+export async function deleteProposal(proposalId: string) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user) {
+      return { error: 'You must be signed in to delete proposals' }
+    }
+
+    // Check if user is admin (only admins can delete, not mods)
+    if (session.user.role !== 'ADMIN'&& session.user.role !== 'MOD') {
+      return { error: 'Only administrators can delete proposals' }
+    }
+
+    const proposal = await prisma.proposal.findUnique({
+      where: { id: proposalId },
+      select: { id: true }
+    })
+
+    if (!proposal) {
+      return { error: 'Proposal not found' }
+    }
+
+    // Delete the proposal (cascade will handle votes and comments)
+    await prisma.proposal.delete({
+      where: { id: proposalId },
+    })
+
+    revalidatePath('/proposals')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting proposal:', error)
+    return { error: 'Failed to delete proposal' }
+  }
+}
 
 export async function submitVote(
   proposalId: string,
@@ -172,12 +206,18 @@ export async function submitVote(
         const runTypeFilter = fullClearOnly 
           ? {
               type: {
-                in: [RunType.FULL_CLEAR_VIDEO, RunType.FULL_CLEAR, RunType.FULL_CLEAR_GB]
+                in: [RunType.FULL_CLEAR_VIDEO,
+                   RunType.FULL_CLEAR,
+                    RunType.FULL_CLEAR_GB,
+                     RunType.GOLDEN_AND_FULL_CLEAR,
+                    RunType.CLEAR_VIDEO_AND_FC,
+                  RunType.CREATOR_FULL_CLEAR,
+                RunType.CREATOR_FULL_CLEAR_GOLDEN]
               }
             }
           : {
               type: {
-                notIn: [RunType.CREATOR_CLEAR]
+                notIn: [RunType.UNKNOWN]
               }
             }
 
@@ -316,6 +356,48 @@ export async function addComment(
   }
 }
 
+export async function updateComment(commentId: string, content: string) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user) {
+      return { error: 'You must be signed in to edit comments' }
+    }
+
+    if (!content.trim()) {
+      return { error: 'Comment cannot be empty' }
+    }
+
+    const comment = await prisma.proposalComment.findUnique({
+      where: { id: commentId },
+      select: { 
+        id: true,
+        userId: true,
+        proposalId: true,
+      },
+    })
+
+    if (!comment) {
+      return { error: 'Comment not found' }
+    }
+    const isModerator = session.user.role === 'MOD' || session.user.role === 'ADMIN'
+    if (comment.userId !== session.user.id && !isModerator) {
+      return { error: 'You can only edit your own comments' }
+    }
+
+    await prisma.proposalComment.update({
+      where: { id: commentId },
+      data: { content },
+    })
+
+    revalidatePath(`/proposals/${comment.proposalId}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating comment:', error)
+    return { error: 'Failed to update comment' }
+  }
+}
+
 export async function deleteComment(commentId: string) {
   try {
     const session = await auth()
@@ -337,12 +419,11 @@ export async function deleteComment(commentId: string) {
     if (!comment) {
       return { error: 'Comment not found' }
     }
-    // Check if user owns the comment
-    if (comment.userId !== session.user.id) {
+    const isModerator = session.user.role === 'MOD' || session.user.role === 'ADMIN'
+    if (comment.userId !== session.user.id && !isModerator) {
       return { error: 'You can only delete your own comments' }
     }
 
-    // Delete the comment (this will also delete any replies due to cascade)
     await prisma.proposalComment.delete({
       where: { id: commentId },
     })

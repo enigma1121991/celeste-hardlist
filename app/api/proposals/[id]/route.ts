@@ -166,3 +166,42 @@ export async function PATCH(
   }
 }
 
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const session = await auth()
+    
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user is admin (only admins can delete, not mods)
+    if (session.user.role !== 'ADMIN'&& session.user.role !== 'MOD') {
+      return NextResponse.json(
+        { error: 'Only administrators can delete proposals' },
+        { status: 403 }
+      )
+    }
+
+    const { deleteProposal } = await import('@/lib/actions/proposal-actions')
+    const result = await deleteProposal(id)
+
+    if (result.error) {
+      return NextResponse.json({ error: result.error }, { status: 400 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting proposal:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete proposal' },
+      { status: 500 }
+    )
+  }
+}

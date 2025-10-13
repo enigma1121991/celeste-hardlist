@@ -17,6 +17,7 @@ interface ProposalVoteSectionProps {
   })[]
   currentUserId?: string
   proposalStatus: string
+  proposalType: string
 }
 
 export default function ProposalVoteSection({
@@ -24,6 +25,7 @@ export default function ProposalVoteSection({
   votes,
   currentUserId,
   proposalStatus,
+  proposalType,
 }: ProposalVoteSectionProps) {
   const router = useRouter()
   const [isVoting, setIsVoting] = useState(false)
@@ -36,7 +38,7 @@ export default function ProposalVoteSection({
   const isOpen = proposalStatus === 'PENDING'
 
   const displayedVotes = showClearedOnly
-    ? votes.filter((v) => v.hasCleared)
+    ? votes.filter((v) => v.hasCleared || v.forceHighlight)
     : votes
 
   const displayedVoteCounts = {
@@ -137,21 +139,21 @@ export default function ProposalVoteSection({
             <button
               onClick={() => handleVote('YES')}
               disabled={isVoting}
-              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
             >
               Yes
             </button>
             <button
               onClick={() => handleVote('NO')}
               disabled={isVoting}
-              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
             >
               No
             </button>
             <button
               onClick={() => handleVote('ABSTAIN')}
               disabled={isVoting}
-              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50"
+              className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
             >
               Abstain
             </button>
@@ -173,7 +175,7 @@ export default function ProposalVoteSection({
       )}
 
       {/* Request Highlight Option */}
-      {currentUserId && isOpen && userVote && !userVote.hasCleared && !userVote.forceHighlight && (
+      {currentUserId && isOpen && userVote && !userVote.hasCleared && !userVote.forceHighlight && proposalType === 'MAP_DIFFICULTY' && (
         <div className="text-center">
           <button
             onClick={() => handleVoteWithForceHighlight(userVote.vote)}
@@ -219,6 +221,7 @@ export default function ProposalVoteSection({
             <h4 className="text-sm font-semibold text-[var(--foreground)]">
             Votes ({displayedVotes.length})
             </h4>
+            {proposalType === 'MAP_DIFFICULTY' && (
             <button
             onClick={() => setShowClearedOnly(!showClearedOnly)}
             className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
@@ -229,6 +232,7 @@ export default function ProposalVoteSection({
             >
             Cleared Only
             </button>
+            )}
         </div>
 
         <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -290,7 +294,7 @@ export default function ProposalVoteSection({
       )}
 
       {/* Force Highlight Modal */}
-      {showForceHighlightModal && (
+      {showForceHighlightModal && proposalType === 'MAP_DIFFICULTY' && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
@@ -318,7 +322,7 @@ export default function ProposalVoteSection({
                   }
                 }}
                 disabled={isVoting || !forceHighlightReasoning.trim()}
-                className="flex-1 px-4 py-2 bg-white text-black border border-gray-300 rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-white text-black border border-gray-300 rounded hover:bg-gray-300 transition-colors disabled:opacity-50"
               >
                 Submit
               </button>

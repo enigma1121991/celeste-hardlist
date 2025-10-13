@@ -22,9 +22,23 @@ export async function generateMetadata({params}: { params: { handle: string }}):
     .filter(run => run.map.stars && run.map.stars > 0)
     .sort((a, b) => (b.map.stars || 0) - (a.map.stars || 0))[0]
 
-  if (!hardestClear.map.stars) {
-    notFound()
-  }
+    if (!hardestClear) {
+      return {
+        title: `${player.handle} - Profile - Hard Clears`,
+        description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+        openGraph: {
+          title: `${player.handle} - Profile - Hard Clears`,
+          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+          type: 'profile',
+          url: `https://hardclears.com/players/${player.handle}`,
+        },
+        twitter: {
+          card: 'summary',
+          title: `${player.handle} - Profile - Hard Clears`,
+          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+        },
+      }
+    }
 
   return {
     title: `${player.handle} - Profile - Hard Clears`,

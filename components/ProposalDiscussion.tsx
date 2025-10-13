@@ -23,6 +23,7 @@ interface ProposalDiscussionProps {
   comments: CommentWithUser[]
   currentUserId?: string
   originalPosterId: string
+  currentUserRole: UserRole
 }
 
 interface CommentItemProps {
@@ -32,21 +33,28 @@ interface CommentItemProps {
   originalPosterId: string
   depth: number
   onReply: () => void
+  currentUserRole: UserRole
 }
 
-function CommentItem({ comment, proposalId, currentUserId, depth, onReply, originalPosterId }: CommentItemProps) {
+function CommentItem({ comment, proposalId, currentUserId, depth, onReply, originalPosterId,currentUserRole }: CommentItemProps) {
   const router = useRouter()
   const [isReplying, setIsReplying] = useState(false)
   const [replyContent, setReplyContent] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editContent, setEditContent] = useState(comment.content)
+  const [isUpdating, setIsUpdating] = useState(false)
 
   const canReply = depth < 2
-  const canDelete = currentUserId === comment.user.id
-  
+  const ownsComment = currentUserId === comment.user.id
+  const isModerator = currentUserRole === 'MOD' || currentUserRole === 'ADMIN'
+
   const MAX_COMMENT_LENGTH = 2000
   const isOverLimit = replyContent.length > MAX_COMMENT_LENGTH
   const isNearLimit = replyContent.length > MAX_COMMENT_LENGTH * 0.8
+  const isEditOverLimit = editContent.length > MAX_COMMENT_LENGTH
+  const isEditNearLimit = editContent.length > MAX_COMMENT_LENGTH * 0.8
 
   const handleSubmitReply = async () => {
     if (!replyContent.trim()) return
@@ -84,6 +92,42 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply, origi
       alert('Failed to post reply')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleUpdateComment = async () => {
+    if (!editContent.trim()) return
+    
+    if (isEditOverLimit) {
+      alert(`Comment is too long. Maximum ${MAX_COMMENT_LENGTH} characters allowed.`)
+      return
+    }
+
+    setIsUpdating(true)
+
+    try {
+      const response = await fetch(`/api/proposals/comments/${comment.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: editContent,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to update comment')
+        return
+      }
+
+      setIsEditing(false)
+      router.refresh()
+    } catch (error) {
+      console.error('Error updating comment:', error)
+      alert('Failed to update comment')
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -143,31 +187,98 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply, origi
             </span>
           </div>
           
-          {/* Delete Button */}
-          {canDelete && (
-            <button
-              onClick={handleDeleteComment}
-              disabled={isDeleting}
-              className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+          {/* Action Buttons */}
+          {(ownsComment || isModerator) && (
+            <div className="flex gap-2">
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Edit
+                </button>
+              )}
+              <button
+                onClick={handleDeleteComment}
+                disabled={isDeleting}
+                className="text-xs text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           )}
         </div>
 
         {/* Comment Content */}
-        <div className="text-sm text-[var(--foreground-muted)] whitespace-pre-wrap break-words overflow-wrap-anywhere mb-2">
-          {comment.content}
-        </div>
+        {isEditing ? (
+          <div className="space-y-2">
+            <div className="relative">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className={`w-full px-3 py-2 bg-[var(--background)] border rounded text-[var(--foreground)] text-sm resize-none ${
+                  isEditOverLimit 
+                    ? 'border-red-500 focus:border-red-500' 
+                    : isEditNearLimit 
+                    ? 'border-yellow-500 focus:border-yellow-500' 
+                    : 'border-[var(--border)] focus:border-blue-500'
+                }`}
+                rows={3}
+              />
+              {/* Character Counter */}
+              <div className="absolute bottom-1 right-1 text-xs">
+                <span className={`${
+                  isEditOverLimit 
+                    ? 'text-red-400' 
+                    : isEditNearLimit 
+                    ? 'text-yellow-400' 
+                    : 'text-[var(--foreground-muted)]'
+                }`}>
+                  {editContent.length}/{MAX_COMMENT_LENGTH}
+                </span>
+              </div>
+            </div>
+            
+            {/* Character Limit Warning */}
+            {isEditOverLimit && (
+              <div className="text-xs text-red-400">
+                Comment exceeds character limit. Please shorten your message.
+              </div>
+            )}
+            
+            <div className="flex gap-2">
+              <button
+                onClick={handleUpdateComment}
+                disabled={isUpdating || !editContent.trim() || isEditOverLimit}
+                className="px-3 py-1.5 bg-white text-black border border-gray-300 rounded text-sm hover:bg-gray-100 transition-colors disabled:opacity-50"
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={() => {
+                  setIsEditing(false)
+                  setEditContent(comment.content)
+                }}
+                disabled={isUpdating}
+                className="px-3 py-1.5 bg-[var(--background)] border border-[var(--border)] text-[var(--foreground)] rounded text-sm hover:bg-[var(--background-hover)] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-[var(--foreground-muted)] whitespace-pre-wrap break-words overflow-wrap-anywhere mb-2">
+            {comment.content}
+          </div>
+        )}
 
         {/* Reply Button */}
-        {currentUserId && canReply &&!isReplying&& (
+        {currentUserId && canReply && !isReplying && !isEditing && (
           <button
             onClick={() => setIsReplying(!isReplying)}
             className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
           >
-            
-            {isReplying ? '' : 'Reply'}
+            Reply
           </button>
         )}
 
@@ -241,6 +352,7 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply, origi
               depth={depth + 1}
               onReply={onReply}
               originalPosterId={originalPosterId}
+              currentUserRole={currentUserRole}
             />
           ))}
         </div>
@@ -253,7 +365,8 @@ export default function ProposalDiscussion({
   proposalId,
   comments,
   currentUserId,
-  originalPosterId
+  originalPosterId,
+  currentUserRole
 }: ProposalDiscussionProps) {
   const router = useRouter()
   const [newComment, setNewComment] = useState('')
@@ -372,6 +485,7 @@ export default function ProposalDiscussion({
               originalPosterId={originalPosterId}
               depth={1}
               onReply={() => {}}
+              currentUserRole={currentUserRole}
             />
           ))}
         </div>

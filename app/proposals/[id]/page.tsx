@@ -7,9 +7,9 @@ import ProposalTypeBadge from '@/components/ProposalTypeBadge'
 import ProposalDetails from '@/components/ProposalDetails'
 import ProposalVoteSection from '@/components/ProposalVoteSection'
 import ProposalDiscussion from '@/components/ProposalDiscussion'
-import { updateProposalStatus } from '@/lib/actions/proposal-actions'
+import { deleteProposal, updateProposalStatus } from '@/lib/actions/proposal-actions'
 import { Metadata } from 'next'
-
+import { redirect } from 'next/navigation'
 export async function generateMetadata({ params }: ProposalPageProps): Promise<Metadata> {
     const { id } = await params
   const session = await auth()
@@ -323,12 +323,13 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
             }}>
               <button
                 type="submit"
-                className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Accept Proposal
               </button>
             </form>
 
+           
             <form action={async () => {
               'use server'
               const { id: proposalId } = await params
@@ -336,7 +337,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
             }}>
               <button
                 type="submit"
-                className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Reject (Veto)
               </button>
@@ -349,14 +350,33 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
             }}>
               <button
                 type="submit"
-                className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                className="px-6 py-2 bg-white text-black border border-gray-300 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Reject (Not Enough Votes)
               </button>
             </form>
+
+            <form action={async () => {
+              'use server'
+              const { id: proposalId } = await params
+              const result = await deleteProposal(proposalId)
+              if (result.error) {
+                console.error(result.error)
+              } else {
+                redirect('/proposals')
+              }
+            }}>
+              <button
+                type="submit"
+                className="px-6 py-2 bg-red-700 text-white border border-red-700 rounded-lg hover:bg-red-800 transition-colors"              >
+                Delete Proposal
+              </button>
+            </form>
+
           </div>
         </div>
       )}
+      
 
       {/* Voting Section */}
       <div className="mb-8 bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg p-6">
@@ -368,6 +388,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
           votes={proposal.votes}
           currentUserId={session?.user?.id}
           proposalStatus={proposal.status}
+          proposalType={proposal.type}
         />
       </div>
 
@@ -378,6 +399,7 @@ export default async function ProposalPage({ params }: ProposalPageProps) {
           comments={proposal.comments}
           currentUserId={session?.user?.id}
           originalPosterId={proposal.createdBy.id}
+          currentUserRole={session?.user?.role || 'USER'}
         />
       </div>
     </div>

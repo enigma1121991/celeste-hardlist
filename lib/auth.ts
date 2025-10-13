@@ -28,11 +28,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Discord({
       clientId: process.env.DISCORD_CLIENT_ID!,
       clientSecret: process.env.DISCORD_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "identify" // Only request identity, not email
+        }
+      },
       profile(profile) {
         return {
           id: profile.id,
           name: profile.global_name ?? profile.username,
-          email: profile.email,
+          email: null,
           image: profile.avatar
             ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
             : null,
