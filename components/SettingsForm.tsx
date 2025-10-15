@@ -16,7 +16,7 @@ export default function SettingsForm({ player }: SettingsFormProps) {
   const [bio, setBio] = useState(player.bio || '')
   const [youtubeUrl, setYoutubeUrl] = useState(player.youtubeUrl || '')
   const [twitchUrl, setTwitchUrl] = useState(player.twitchUrl || '')
-  const [discordHandle, setDiscordHandle] = useState(player.discordHandle || '')
+//   const [discordHandle, setDiscordHandle] = useState(player.discordHandle || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -50,7 +50,7 @@ export default function SettingsForm({ player }: SettingsFormProps) {
       const result = await updatePlayerSocials({
         youtubeUrl: youtubeUrl || undefined,
         twitchUrl: twitchUrl || undefined,
-        discordHandle: discordHandle || undefined,
+        // discordHandle: discordHandle || undefined,
       })
       if (result.success) {
         setSuccess('Social links updated successfully!')
@@ -145,7 +145,7 @@ export default function SettingsForm({ player }: SettingsFormProps) {
             />
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
               Discord Handle
             </label>
@@ -156,7 +156,7 @@ export default function SettingsForm({ player }: SettingsFormProps) {
               placeholder="username#1234"
               className="w-full px-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
             />
-          </div>
+          </div> */}
 
           <div className="flex justify-end">
             <button

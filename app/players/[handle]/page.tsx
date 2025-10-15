@@ -175,15 +175,10 @@ export default async function PlayerPage({
                   
                 </a>
               )}
-              {player.discordHandle && (
-                <DiscordTag tag={player.discordHandle} />
+              {player.user?.name && (
+                <DiscordTag tag={player.user.name} />
               )}
             </div>
-            {player.bio && (
-              <p className="text-[var(--foreground-muted)] mt-2 max-w-2xl">
-                {player.bio}
-              </p>
-            )}
           </div>
 
           {/* Rank Badge 
@@ -211,6 +206,11 @@ export default async function PlayerPage({
                 </div>
             </div>
         </div>
+        {player.bio && (
+            <p className="text-[var(--foreground-muted)] mt-2 max-w-2xl">
+            {player.bio}
+            </p>
+        )}
       </div>
 
       {/* Badges/Stats Dashboard */}

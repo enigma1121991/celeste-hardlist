@@ -157,7 +157,7 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
                 </Link>
                 <Link
                   href="/admin/claims"
-                  className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] transition-colors"
+                  className="flex items-center justify-between px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   <span>Player Claims</span>

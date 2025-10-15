@@ -35,6 +35,7 @@ export async function getPlayerByHandle(handle: string) {
           id: true,
           role: true,
           image: true,
+          name: true
         },
       },
       runs: {
