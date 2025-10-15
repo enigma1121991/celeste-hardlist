@@ -18,12 +18,12 @@ export default function RoleBadge({ role, size = "md" }: RoleBadgeProps) {
 
   const roleConfig = {
     [UserRole.ADMIN]: {
-      label: "Admin",
+      label: "Dev",
       colors: "bg-red-500/20 text-red-400 border-red-500/50",
     },
     [UserRole.MOD]: {
       label: "Moderator",
-      colors: "bg-purple-500/20 text-purple-400 border-purple-500/50",
+      colors: "bg-[#ffd2f8]/20 text-[#ffd2f8] border-[#ffd2f8]",
     },
     [UserRole.VERIFIER]: {
       label: "Verifier",
