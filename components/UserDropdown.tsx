@@ -44,14 +44,16 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
     await signOut({ callbackUrl: '/' })
   }
 
-  if (user.image) {
-    try {
-        console.log(user.image)
-        user.image = user.image.split("url=")[1].split("&")[0]
-    } catch (e) {
-        "fucked up"
-    }
-  }
+//   if (user.image) {
+//     try {
+//         if (user.image.includes('url=')) {
+//             const encodedUrl = user.image.split('url=')[1].split('&')[0]
+//             user.image = decodeURIComponent(encodedUrl)
+//         }
+//     } catch (e) {
+//         "fucked up"
+//     }
+//   }
 
   return (
     <div className="relative" ref={dropdownRef}>

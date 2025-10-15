@@ -23,30 +23,30 @@ export async function generateMetadata({params}: { params: { handle: string }}):
     .filter(run => run.map.stars && run.map.stars > 0)
     .sort((a, b) => (b.map.stars || 0) - (a.map.stars || 0))[0]
 
-    if (!hardestClear) {
-      return {
-        title: `${player.handle} - Profile - Hard Clears`,
-        description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
-        openGraph: {
-          title: `${player.handle} - Profile - Hard Clears`,
-          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
-          type: 'profile',
-          url: `https://hardclears.com/players/${player.handle}`,
-        },
-        twitter: {
-          card: 'summary',
-          title: `${player.handle} - Profile - Hard Clears`,
-          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
-        },
-      }
-    }
+    // if (!hardestClear) {
+    //   return {
+    //     title: `${player.handle} - Profile - Hard Clears`,
+    //     description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+    //     openGraph: {
+    //       title: `${player.handle} - Profile - Hard Clears`,
+    //       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+    //       type: 'profile',
+    //       url: `https://hardclears.com/players/${player.handle}`,
+    //     },
+    //     twitter: {
+    //       card: 'summary',
+    //       title: `${player.handle} - Profile - Hard Clears`,
+    //       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+    //     },
+    //   }
+    // }
 
   return {
     title: `${player.handle} - Profile - Hard Clears`,
-    description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
+    description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear: ${hardestClear.map.stars}★`,
     openGraph: {
       title: `${player.handle} - Profile - Hard Clears`,
-      description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
+      description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear: ${hardestClear.map.stars}★`,
       type: 'profile',
       url: `https://hardclears.com/players/${player.handle}`,
       images: [{url: "/metadata-image.png", width: 256, height: 256}],
@@ -54,7 +54,7 @@ export async function generateMetadata({params}: { params: { handle: string }}):
     twitter: {
       card: 'summary',
       title: `${player.handle} - Profile - Hard Clears`,
-      description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear - ${hardestClear.map.name}`,
+      description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear: ${hardestClear.map.stars}★`,
       images: [{url: "/metadata-image.png", width: 256, height: 256}],
     },
   }
@@ -125,9 +125,18 @@ export default async function PlayerPage({
     <div className="max-w-6xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-6">
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 flex-wrap mb-2">
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex flex-1 items-center h-full">
+            <div className="flex items-center gap-3 flex-wrap">
+              {player.user && (
+                <Image
+                    src={player.user.image || ""}
+                    alt={''}
+                    width={48}  
+                    height={48}
+                    className="rounded-full"
+                ></Image>
+              )}
               <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">{player.handle}</h1>
               {player.user && <RoleBadge role={player.user.role} size="md" />}
               
@@ -190,16 +199,17 @@ export default async function PlayerPage({
             #{playerRank}
           </div>
           */}
-        </div>
-      </div>
+            {/* wonder whats up there */}
 
-      {/* Total Clears */}
-      <div className="text-center py-6">
-        <div className="text-6xl font-black text-[var(--foreground)] mb-2 tracking-tight">
-          {stats.totalClears}
-        </div>
-        <div className="text-lg font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">
-          Total Clears
+            {/* Total Clears */}
+            <div className="text-center">
+                <div className="text-2xl font-black text-[var(--foreground)] tracking-tight">
+                {stats.totalClears}
+                </div>
+                <div className="text-sm font-semibold text-[var(--foreground-muted)] uppercase tracking-wider">
+                Total Clears
+                </div>
+            </div>
         </div>
       </div>
 

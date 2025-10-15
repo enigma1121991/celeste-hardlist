@@ -2,8 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from "next/image";
 import { PlayerWithRuns } from '@/lib/types'
 import { calculateWeightedStarScore } from '@/lib/players'
+import { getStarColor } from "@/components/utils/colors"
+import RoleBadge from '@/components/RoleBadge'
 
 interface PlayersClientProps {
   initialPlayers: PlayerWithRuns[]
@@ -202,20 +205,6 @@ export default function PlayersClient({ initialPlayers, totalCount }: PlayersCli
             return stars > max ? stars : max
           }, 0)
 
-          const getStarColor = (stars: number): string => {
-            const colorMap: Record<number, string> = {
-              1: '#9900ff',
-              2: '#ff39d2',
-              3: '#fe496a',
-              4: '#ff5435',
-              5: '#ffff32',
-              6: '#32ff32',
-              7: '#32ffa0',
-              8: '#32ffff',
-            }
-            return colorMap[stars] || '#71717a'
-          }
-
           return (
             <Link key={player.id} href={`/players/${encodeURIComponent(player.handle)}`}>
               <div 
@@ -229,21 +218,30 @@ export default function PlayersClient({ initialPlayers, totalCount }: PlayersCli
                     } as React.CSSProperties
                   }>
                 <div className="flex items-start justify-between gap-4 mb-2">
-                  <div className="mb-2">
+                  <div className="mb-2 flex gap-2 items-center">
+                    {player.user && player.user.image && (
+                    <Image
+                        src={player.user.image || ""}
+                        alt={''}
+                        width={32}
+                        height={32}
+                        className="rounded-full"
+                    ></Image>)}
                     <h3 className="text-base font-semibold text-[var(--foreground)]">
                       {player.handle}
                     </h3>
+                    {player.user && <RoleBadge role={player.user.role} size="sm" />}
                   </div>
 
                   {/* Main stats - right side */}
                   <div className="text-right flex-shrink-0">
                     <div className="mb-2">
-                      <span className="text-lg font-semibold text-[var(--foreground)]">
+                      <span className="text-lg font-bold text-[var(--foreground)]">
                       {player.runs.length}
                         
                       </span>
 
-                      <span className="text-sm text-[var(--foreground-muted)] ml-2">clears</span>
+                      <span className="text-sm text-[var(--foreground-muted)] ml-1">clears</span>
                     {/*
                       
                       <span className="text-[var(--foreground-muted)] mx-2">•</span>

@@ -155,7 +155,7 @@ export default function ProposalVoteSection({
               disabled={isVoting}
               className="px-6 py-3 bg-white text-black border border-gray-300 rounded-lg font-medium hover:bg-gray-300 transition-colors disabled:opacity-50"
             >
-              Abstain
+              Indifferent
             </button>
           </div>
           
@@ -195,7 +195,7 @@ export default function ProposalVoteSection({
       ].map((bar) => (
           <div key={bar.voteType} className="flex items-center gap-3">
           <span className="text-sm font-medium text-[var(--foreground)] w-20">
-              {VOTE_TYPE_LABELS[bar.voteType]}
+              {bar.voteType==='ABSTAIN' ? 'Indifferent' : VOTE_TYPE_LABELS[bar.voteType]}
           </span>
           <div className="flex-1 bg-[var(--background)] rounded-full h-6 overflow-hidden border border-[var(--border)]">
               <div
@@ -277,7 +277,7 @@ export default function ProposalVoteSection({
                     vote.vote === 'NO' ? 'text-red-400' :
                     'text-gray-400'
                     }`}>
-                    {VOTE_TYPE_LABELS[vote.vote]}
+                    {vote.vote==='ABSTAIN' ? 'Indifferent' : VOTE_TYPE_LABELS[vote.vote]}
                     </span>
                 </div>
                 </div>

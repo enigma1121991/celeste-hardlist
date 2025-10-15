@@ -6,6 +6,7 @@ import { ProposalComment } from '@prisma/client'
 import { UserRole } from '@prisma/client'
 import RoleBadge from '@/components/RoleBadge'
 import Link from 'next/link'
+import Image from 'next/image'
 
 type CommentWithUser = ProposalComment & {
   user: {
@@ -24,6 +25,7 @@ interface ProposalDiscussionProps {
   currentUserId?: string
   originalPosterId: string
   currentUserRole: UserRole
+  userImage: string | null
 }
 
 interface CommentItemProps {
@@ -175,6 +177,15 @@ function CommentItem({ comment, proposalId, currentUserId, depth, onReply, origi
         {/* Comment Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
+            {comment.user.image && (
+            <Image
+                src={comment.user.image || ""}
+                alt={''}
+                width={24}
+                height={24}
+                className="rounded-full"
+            ></Image>
+            )}
             <Link href={`/players/${encodeURIComponent(comment.user.name || "")}`} className="text-sm font-medium text-[var(--foreground)]">
               {comment.user.name || comment.user.discordUsername || 'Unknown'} 
             </Link>

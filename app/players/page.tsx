@@ -49,6 +49,7 @@ export default async function PlayersPage() {
         select: {
           id: true,
           role: true,
+          image: true,
         },
       },
     },

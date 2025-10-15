@@ -16,6 +16,7 @@ import {
   extractAllUrls,
 } from './utils.js'
 import { extractSheetId, fetchGoogleSheet, sheetDataToCsvFormat } from './sheets.js'
+import { getRunDate } from '../lib/retrieve-date'
 
 interface ImportArgs {
   csv?: string
@@ -162,6 +163,19 @@ async function runImport() {
   const contentBytes = Buffer.byteLength(content, 'utf-8')
   console.log(`Content size: ${contentBytes} bytes`)
   console.log(`SHA256: ${contentHash}`)
+
+  const existingSnapshot = await prisma.snapshot.findUnique({
+    where: { sha256: contentHash },
+  })
+
+  if (existingSnapshot && !dryRun) {
+    console.log('\nSheet content is unchanged. Proceeding with data sync anyway.')
+    // console.log('\nImport aborted: The sheet data has not changed since the last import.')
+    // console.log(`   Matching snapshot was captured at: ${existingSnapshot.capturedAt.toISOString()}`)
+    // await prisma.$disconnect()
+    // process.exit(0)
+  }
+
   if (!dryRun) {
   await mkdir(snapshotsDir, { recursive: true })
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
@@ -235,6 +249,7 @@ async function runImport() {
     }
   }
   if (skippedRows.length > 0) console.log(`   Skipped ${skippedRows.length} header/summary rows`)
+  if (parsedRows.length > 0) parsedRows.pop(); // # challenges or something
   console.log(`   Parsed ${parsedRows.length} valid map rows`)
   console.log('')
   console.log(dryRun ? 'DRY RUN - Analyzing differences (no changes will be made)...' : 'Analyzing differences with database...')
@@ -388,7 +403,7 @@ async function runImport() {
     }
   }
   console.log('   Analyzing runs...')
-  const desiredByPair: Map<string, { mapName: string; playerHandle: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string }> = new Map()
+  const desiredByPair: Map<string, { mapName: string; playerHandle: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string, createdAt: Date }> = new Map()
   for (const row of parsedRows) {
     for (const [playerHandle, cellValue] of Object.entries(row.playerData)) {
       const runData = mapCellToRunType(cellValue)
@@ -399,6 +414,7 @@ async function runImport() {
         type: runData.type,
         evidenceUrls: runData.evidenceUrls ?? null,
         verifiedStatus: 'VERIFIED',
+        createdAt: new Date(0),
       })
     }
   }
@@ -408,7 +424,7 @@ async function runImport() {
     if (!runIndex.has(key)) runIndex.set(key, { rows: [], items: [] } as any)
     ;(runIndex.get(key)!.items as any).push(r)
   }
-  const toCreate: Array<{ mapId: string; playerId: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string }> = []
+  const toCreate: Array<{ mapId: string; playerId: string; type: string; evidenceUrls: string[] | null; verifiedStatus: string; createdAt: Date}> = []
   const toReplace: Array<{
     key: string
     deleteCount: number
@@ -424,8 +440,13 @@ async function runImport() {
       continue
     }
     const existingForPair = runIndex.get(key)?.items ?? []
+    var epochDate = new Date(0);
+    if (evidenceUrls) {
+        // epochDate = await getRunDate(evidenceUrls[0] || "")
+        epochDate = new Date(0)
+    }
     if (existingForPair.length === 0) {
-      toCreate.push({ mapId, playerId, type, evidenceUrls, verifiedStatus })
+      toCreate.push({ mapId, playerId, type, evidenceUrls, verifiedStatus, createdAt: epochDate })
       continue
     }
     const exactlyOne = existingForPair.length === 1
@@ -459,7 +480,7 @@ async function runImport() {
             const desired = desiredByPair.get(`${u.mapName}|||${u.playerHandle}`)!
             const existingForPair = runIndex.get(`${u.mapName}|||${u.playerHandle}`)?.items ?? []
             if (existingForPair.length === 0) {
-              toCreate.push({ mapId, playerId, type: desired.type, evidenceUrls: desired.evidenceUrls, verifiedStatus: desired.verifiedStatus })
+              toCreate.push({ mapId, playerId, type: desired.type, evidenceUrls: desired.evidenceUrls, verifiedStatus: desired.verifiedStatus, createdAt: desired.createdAt })
             } else {
               toReplace.push({
                 key: `${u.mapName}|||${u.playerHandle}`,
@@ -516,7 +537,7 @@ async function runImport() {
       await prisma.run.createMany({ data: batch, skipDuplicates: true })
     }
   }
-  if (!dryRun) {
+  if (!dryRun && !existingSnapshot) {
   await prisma.snapshot.create({
     data: {
       sourceUrl: sourceUrl,
@@ -525,8 +546,10 @@ async function runImport() {
         path: '',
     },
   })
-  } else {
+  } else if (dryRun) {
     console.log('\nDry run: skipping snapshot row insert')
+  } else {
+    console.log('\nSkipping snapshot row insert because content is unchanged.')
   }
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1)
   if (dryRun) {
