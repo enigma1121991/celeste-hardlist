@@ -115,7 +115,7 @@ export default async function PlayerPage({
   })
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-6">
         <div className="flex justify-between items-start gap-4">
