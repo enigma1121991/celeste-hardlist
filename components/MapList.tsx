@@ -125,8 +125,7 @@ export default function MapList({ maps }: MapListProps) {
                           href={map.canonicalVideoUrl!}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-shrink-0 w-48 h-28 bg-[var(--background-hover)] rounded overflow-hidden group/thumb relative"
-                          onClick={(e) => e.stopPropagation()}
+                          className="flex-shrink-0 w-32 sm:w-40 lg:w-48 h-20 sm:h-24 lg:h-28 bg-[var(--background-hover)] rounded overflow-hidden group/thumb relative"                          onClick={(e) => e.stopPropagation()}
                         >
                           <Image
                             src={thumbnailUrl}
