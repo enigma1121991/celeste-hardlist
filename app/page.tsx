@@ -34,6 +34,7 @@ export default async function Home() {
 
   return (
     <div className="relative min-h-[calc(100vh-190px)] max-w-7xl mx-auto px-8 py-4 flex flex-col">
+      <div className="hidden lg:block">
       {/* Spike Decorations - scattered underneath content, outside main text area */}
       {/* Left side spikes */}
       <div className="absolute top-4 -left-32 w-12 h-12 opacity-18 pointer-events-none z-0 rotate-45">
@@ -92,7 +93,7 @@ export default async function Home() {
       <div className="absolute bottom-4 -right-34 w-14 h-14 opacity-17 pointer-events-none z-0 -rotate-[40deg]">
         <Image src="/spike.png" alt="" fill className="object-contain" />
       </div>
-
+      </div>
       {/* Top Spacer */}
       <div className="flex-[3] relative z-10"></div>
 

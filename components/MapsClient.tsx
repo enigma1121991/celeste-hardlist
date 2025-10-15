@@ -70,14 +70,14 @@ export default function MapsClient({ initialMaps, creators, tags }: MapsClientPr
   }, [filters, initialMaps])
 
   return (
-    <div className="flex justify-center items-start gap-8 container mx-auto px-4">
+    <div className="flex flex-col lg:flex-row justify-center items-start gap-8 container mx-auto px-4">
       {initialLoad && (
         <div className="fixed inset-0 bg-[var(--background)]/80 backdrop-blur-sm z-50 flex items-center justify-center">
         </div>
       )}
 
       {/* --- Sidebar --- */}
-      <aside className="sticky top-3/8 w-1/4 overflow-y-auto">
+      <aside className="sticky top-3/8 w-full lg:w-1/4 overflow-y-auto">
         <FilterSidebar
           onFilterChange={handleFilterChange}
           creators={creators}
@@ -86,7 +86,7 @@ export default function MapsClient({ initialMaps, creators, tags }: MapsClientPr
       </aside>
 
       {/* --- Main Content --- */}
-      <div className="w-1/2">
+      <div className="w-full lg:w-1/2">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">
@@ -112,7 +112,7 @@ export default function MapsClient({ initialMaps, creators, tags }: MapsClientPr
         )}
       </div>
 
-      <div className="w-1/4"></div>
+      <div className="hidden lg:block w-1/4"></div>
     </div>
   )
 }

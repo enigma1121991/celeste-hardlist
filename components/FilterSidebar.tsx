@@ -72,6 +72,7 @@ export default function FilterSidebar({
   }
 
   return (
+    <div className="hidden lg:block">
     <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-5 space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-base font-semibold text-[var(--foreground)]">Filters</h2>
@@ -140,6 +141,7 @@ export default function FilterSidebar({
           ))}
         </div>
       </div>
+    </div>
     </div>
   )
 }
