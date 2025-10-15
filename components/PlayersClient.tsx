@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { PlayerWithRuns } from '@/lib/types'
+import { calculateWeightedStarScore } from '@/lib/players'
 
 interface PlayersClientProps {
   initialPlayers: PlayerWithRuns[]
@@ -109,10 +110,15 @@ export default function PlayersClient({ initialPlayers, totalCount }: PlayersCli
 
   // Use search results if in search mode, otherwise use paginated players
   const displayPlayers = searchMode ? searchResults : players
-
+  
   const sortedPlayers = [...displayPlayers].sort((a, b) => {
     return b.runs.length - a.runs.length
-  })
+  })/*
+  const sortedPlayers = [...displayPlayers].sort((a, b) => {
+    const scoreA = calculateWeightedStarScore(a.runs)
+    const scoreB = calculateWeightedStarScore(b.runs)
+    return scoreB - scoreA
+  })*/
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 px-8">
@@ -232,12 +238,23 @@ export default function PlayersClient({ initialPlayers, totalCount }: PlayersCli
                   {/* Main stats - right side */}
                   <div className="text-right flex-shrink-0">
                     <div className="mb-2">
-                      <span className="text-2xl font-bold text-[var(--foreground)]">
-                        {player.runs.length}
+                      <span className="text-lg font-semibold text-[var(--foreground)]">
+                      {player.runs.length}
+                        
                       </span>
+
                       <span className="text-sm text-[var(--foreground-muted)] ml-2">clears</span>
-                    </div>
-                    
+                    {/*
+                      
+                      <span className="text-[var(--foreground-muted)] mx-2">•</span>
+                      <span className="text-lg font-bold text-[var(--foreground)]">
+                      {calculateWeightedStarScore(player.runs)}
+
+                      </span>
+                      <span className="text-sm text-[var(--foreground-muted)] ml-2">points</span>
+                    */}
+                      </div>
+
                     {hardestClear > 0 && (
                       <div 
                         className="pr-1 py-1 rounded font-bold text-sm inline-block"

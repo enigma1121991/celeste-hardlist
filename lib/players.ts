@@ -122,6 +122,22 @@ export function calculatePlayerStats(runs: any[]): PlayerStats {
 
   return stats
 }
+export function calculateWeightedStarScore(runs: any[]): number {
+  // Get all runs with star ratings, sorted by stars descending
+  const runsWithStars = runs
+    .filter(run => run.map.stars && run.map.stars > 0)
+    .sort((a, b) => (b.map.stars || 0) - (a.map.stars || 0))
+    .slice(0, 10) // Only take top 10 hardest clears
+  
+  // Calculate weighted score: 10x hardest + 9x second + ... + 1x tenth
+  let score = 0
+  for (let i = 0; i < runsWithStars.length; i++) {
+    const weight = 10 - i
+    score += (runsWithStars[i].map.stars || 0) * weight
+  }
+  
+  return score
+}
 
 export function getRunTypeBadge(type: RunType): {
   label: string

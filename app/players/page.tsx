@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import PlayersClient from '@/components/PlayersClient'
 import { Metadata } from 'next'
-
+import { calculateWeightedStarScore } from '@/lib/players'
 export async function generateMetadata(): Promise<Metadata> {
 
   return {
@@ -53,10 +53,15 @@ export default async function PlayersPage() {
       },
     },
   })
+  const sortedPlayers = allPlayers.sort((a: any, b: any) => b.runs.length - a.runs.length)
 
   // Sort by number of clears (descending), then take first page
-  const sortedPlayers = allPlayers.sort((a: any, b: any) => b.runs.length - a.runs.length)
-  const players = sortedPlayers.slice(0, pageSize)
+  /*const sortedPlayers = allPlayers.sort((a: any, b: any) => {
+    const scoreA = calculateWeightedStarScore(a.runs)
+    const scoreB = calculateWeightedStarScore(b.runs)
+    return scoreB - scoreA
+  })*/
+ const players = sortedPlayers.slice(0, pageSize)
 
   const totalCount = await prisma.player.count()
 

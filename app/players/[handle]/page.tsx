@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { getPlayerByHandle, calculatePlayerStats, getPlayers } from '@/lib/players'
+import { getPlayerByHandle, calculatePlayerStats, getPlayers, calculateWeightedStarScore } from '@/lib/players'
 import PlayerBadge from '@/components/PlayerBadge'
 import RoleBadge from '@/components/RoleBadge'
 import DiscordTag from '@/components/DiscordTag'
@@ -78,16 +78,23 @@ export default async function PlayerPage({
 
   // Calculate player rank
   const allPlayers = await getPlayers()
-  const playerClearCounts = allPlayers.map((p: { id: any; runs: string | any[] }) => ({
+  
+  const playerScores = allPlayers.map((p: { id: any; runs: string | any[] }) => ({
     id: p.id,
     clears: p.runs.length
   })).sort((a: { clears: number }, b: { clears: number }) => b.clears - a.clears)
-
+  
+ /*
+  const playerScores = allPlayers.map((p: { id: any; runs: any[] }) => ({
+    id: p.id,
+    score: calculateWeightedStarScore(p.runs)
+  })).sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+  */
   let rank = 1
   let currentRank = 1
   let previousClears = -1
   
-  for (const p of playerClearCounts) {
+  for (const p of playerScores) {
     if (p.clears !== previousClears) {
       currentRank = rank
       previousClears = p.clears
@@ -170,7 +177,7 @@ export default async function PlayerPage({
             )}
           </div>
 
-          {/* Rank Badge */}
+          {/* Rank Badge 
           <div 
             className="px-4 py-2 rounded text-xl font-bold flex items-center gap-2 flex-shrink-0"
             style={{
@@ -182,6 +189,7 @@ export default async function PlayerPage({
           >
             #{playerRank}
           </div>
+          */}
         </div>
       </div>
 

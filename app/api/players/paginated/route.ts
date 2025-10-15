@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { calculateWeightedStarScore } from '@/lib/players'
 
 export async function GET(request: Request) {
   try {
@@ -36,8 +37,12 @@ export async function GET(request: Request) {
       prisma.player.count(),
     ])
 
-    // Sort by number of clears (descending), then paginate
     const sortedPlayers = allPlayers.sort((a, b) => b.runs.length - a.runs.length)
+    /*const sortedPlayers = allPlayers.sort((a, b) => {
+      const scoreA = calculateWeightedStarScore(a.runs)
+      const scoreB = calculateWeightedStarScore(b.runs)
+      return scoreB - scoreA
+    })*/
     const players = sortedPlayers.slice(skip, skip + pageSize)
 
     const hasMore = skip + players.length < totalCount
