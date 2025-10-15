@@ -12,6 +12,7 @@ export default function Navbar() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [pendingClearCount, setPendingClearCount] = useState(0)
+  const [pendingClaimCount, setPendingClaimCount] = useState(0)
   const [playerHandle, setPlayerHandle] = useState<string | null>(null)
   const { data: session, status } = useSession()
 
@@ -37,6 +38,26 @@ export default function Navbar() {
           .then((res) => res.json())
           .then((data) => setPendingClearCount(data.count || 0))
           .catch((err) => console.error('Error fetching pending count:', err))
+      }, 30000)
+
+      return () => clearInterval(interval)
+    }
+  }, [session])
+
+    useEffect(() => {
+    // Fetch pending clear count if user can verify
+    if (session?.user && canVerify(session.user.role)) {
+      fetch('/api/claim/count')
+        .then((res) => res.json())
+        .then((data) => setPendingClaimCount(data.count || 0))
+        .catch((err) => console.error('Error fetching pending claim count:', err))
+      
+      // Refresh count every 30 seconds
+      const interval = setInterval(() => {
+        fetch('/api/claim/count')
+          .then((res) => res.json())
+          .then((data) => setPendingClaimCount(data.count || 0))
+          .catch((err) => console.error('Error fetching pending claim count:', err))
       }, 30000)
 
       return () => clearInterval(interval)
@@ -86,7 +107,7 @@ export default function Navbar() {
             {status === 'loading' ? (
               <div className="w-8 h-8 animate-pulse bg-[var(--background-hover)] rounded"></div>
             ) : session?.user ? (
-              <UserDropdown user={session.user} playerHandle={playerHandle} pendingClearCount={pendingClearCount} />
+              <UserDropdown user={session.user} playerHandle={playerHandle} pendingClearCount={pendingClearCount} pendingClaimCount={pendingClaimCount} />
             ) : (
               <button
                 onClick={() => signIn('discord')}

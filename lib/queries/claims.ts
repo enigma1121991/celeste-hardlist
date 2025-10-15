@@ -62,6 +62,9 @@ export async function getUserClaim(userId: string) {
   })
 }
 
-
-
+export async function getPendingClaimCount() {
+  return await prisma.playerClaim.count({
+    where: { status: ClaimStatus.PENDING }
+  })
+}
 

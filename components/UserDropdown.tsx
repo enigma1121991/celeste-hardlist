@@ -16,9 +16,10 @@ interface UserDropdownProps {
   }
   playerHandle?: string | null
   pendingClearCount?: number
+  pendingClaimCount?: number
 }
 
-export default function UserDropdown({ user, playerHandle, pendingClearCount = 0 }: UserDropdownProps) {
+export default function UserDropdown({ user, playerHandle, pendingClearCount = 0, pendingClaimCount = 0 }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -159,7 +160,12 @@ export default function UserDropdown({ user, playerHandle, pendingClearCount = 0
                   className="block px-4 py-2 text-sm text-[var(--foreground)] hover:bg-[var(--background-hover)] transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
-                  Player Claims
+                  <span>Player Claims</span>
+                    {pendingClaimCount > 0 && (
+                    <span className="px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full">
+                      {pendingClaimCount}
+                    </span>
+                  )}
                 </Link>
               </>
             )}
