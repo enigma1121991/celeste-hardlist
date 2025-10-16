@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
         pathname: '/avatars/**',
       },
     ],
+    unoptimized: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
