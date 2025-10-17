@@ -124,7 +124,11 @@ export default async function PlayerPage({
   return (
     <div className="max-w-6xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-6 relative">
+      <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-6 relative" 
+           style={{ 
+             minHeight: (player.youtubeUrl || player.twitchUrl || player.user?.name) ? '140px' : '120px',
+             transition: 'min-height 0.2s ease'
+           }}>
         <div className="flex justify-between items-center gap-4">
           <div className="flex flex-1 items-center h-full">
             <div className="flex items-center gap-3 flex-wrap">
@@ -191,7 +195,11 @@ export default async function PlayerPage({
 
         {/* Social Links - bottom right (absolute positioned) */}
         {(player.youtubeUrl || player.twitchUrl || player.user?.name) && (
-          <div className="absolute bottom-4 right-4 flex items-center gap-2">
+          <div className="absolute bottom-4 right-4 flex items-center gap-2 z-10" 
+               style={{ 
+                 transform: 'translateY(0)',
+                 transition: 'transform 0.2s ease'
+               }}>
             {player.youtubeUrl && (
               <a
                 href={
