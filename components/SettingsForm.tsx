@@ -10,10 +10,16 @@ interface SettingsFormProps {
     twitchUrl: string | null
     discordHandle: string | null
   }
+  user: {
+    pronouns: string | null
+    inputMethod: string | null
+  }
 }
 
-export default function SettingsForm({ player }: SettingsFormProps) {
+export default function SettingsForm({ player, user }: SettingsFormProps) {
   const [bio, setBio] = useState(player.bio || '')
+  const [pronouns, setPronouns] = useState(user.pronouns || '')
+  const [inputMethod, setInputMethod] = useState(user.inputMethod || '')
   const [youtubeUrl, setYoutubeUrl] = useState(player.youtubeUrl || '')
   const [twitchUrl, setTwitchUrl] = useState(player.twitchUrl || '')
 //   const [discordHandle, setDiscordHandle] = useState(player.discordHandle || '')
@@ -27,7 +33,7 @@ export default function SettingsForm({ player }: SettingsFormProps) {
     setSuccess('')
 
     try {
-      const result = await updatePlayerBio(bio)
+      const result = await updatePlayerBio(bio, pronouns, inputMethod)
       if (result.success) {
         setSuccess('Bio updated successfully!')
       } else {
@@ -39,6 +45,18 @@ export default function SettingsForm({ player }: SettingsFormProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSavePronouns = async () => {
+    setLoading(true)
+    setError('')
+    setSuccess('')
+  }
+
+  const handleSaveInputMethod = async () => {
+    setLoading(true)
+    setError('')
+    setSuccess('')
   }
 
   const handleSaveSocials = async () => {
@@ -79,42 +97,93 @@ export default function SettingsForm({ player }: SettingsFormProps) {
         </div>
       )}
 
-      {/* Bio Section */}
-      <div>
-        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">
-          Profile Bio
+      {/* Profile Information Section */}
+      <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
+          Profile Information
         </h3>
-        <p className="text-sm text-[var(--foreground-muted)] mb-3">
-          Write a short bio about yourself (max 500 characters)
-        </p>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          maxLength={500}
-          placeholder="Tell us about yourself..."
-          className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)] resize-none"
-          rows={4}
-        />
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-xs text-[var(--foreground-muted)]">
-            {bio.length} / 500 characters
-          </span>
-          <button
-            onClick={handleSaveBio}
-            disabled={loading}
-            className="px-4 py-2 bg-white text-black border border-gray-300 rounded font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Saving...' : 'Save Bio'}
-          </button>
+        
+        <div className="space-y-6">
+          {/* Bio Section */}
+          <div>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              Bio
+            </label>
+            <div className="relative">
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                maxLength={500}
+                placeholder="Tell us about yourself..."
+                className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)] resize-none"
+                rows={4}
+              />
+              <div className="absolute bottom-3 right-3 text-xs text-[var(--foreground-muted)]">
+                {bio.length} / 500
+              </div>
+            </div>
+          </div>
+
+          {/* Pronouns and Input Method  */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                Pronouns
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={pronouns}
+                  onChange={(e) => setPronouns(e.target.value)}
+                  maxLength={32}
+                  placeholder="e.g. they/them"
+                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
+                />
+                <div className="absolute bottom-2 right-2 text-xs text-[var(--foreground-muted)] bg-[var(--background)] px-1 rounded">
+                  {pronouns.length} / 32
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+                Input Method
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={inputMethod}
+                  onChange={(e) => setInputMethod(e.target.value)}
+                  maxLength={100}
+                  placeholder="e.g., Keyboard"
+                  className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
+                />
+                <div className="absolute bottom-2 right-2 text-xs text-[var(--foreground-muted)] bg-[var(--background)] px-1 rounded">
+                  {inputMethod.length} / 100
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Save button */}
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={handleSaveBio}
+              disabled={loading}
+              className="px-6 py-2 bg-white text-black border border-gray-300 rounded font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Saving...' : 'Save Profile'}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Social Links Section */}
-      <div>
-        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">
+      <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
           Social Links
         </h3>
-        <p className="text-sm text-[var(--foreground-muted)] mb-4">
+        <p className="text-sm text-[var(--foreground-muted)] mb-6">
           Add links to your social media profiles
         </p>
 
@@ -128,7 +197,7 @@ export default function SettingsForm({ player }: SettingsFormProps) {
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
               placeholder="https://youtube.com/@yourname"
-              className="w-full px-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
+              className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
             />
           </div>
 
@@ -141,28 +210,15 @@ export default function SettingsForm({ player }: SettingsFormProps) {
               value={twitchUrl}
               onChange={(e) => setTwitchUrl(e.target.value)}
               placeholder="https://twitch.tv/yourname"
-              className="w-full px-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
+              className="w-full px-4 py-3 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
             />
           </div>
 
-          {/* <div>
-            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
-              Discord Handle
-            </label>
-            <input
-              type="text"
-              value={discordHandle}
-              onChange={(e) => setDiscordHandle(e.target.value)}
-              placeholder="username#1234"
-              className="w-full px-4 py-2 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--border-hover)]"
-            />
-          </div> */}
-
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4">
             <button
               onClick={handleSaveSocials}
               disabled={loading}
-              className="px-4 py-2 bg-white text-black border border-gray-300 rounded font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-white text-black border border-gray-300 rounded font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Saving...' : 'Save Social Links'}
             </button>

@@ -35,7 +35,9 @@ export async function getPlayerByHandle(handle: string) {
           id: true,
           role: true,
           image: true,
-          name: true
+          name: true,
+          pronouns: true,
+          inputMethod: true,
         },
       },
       runs: {

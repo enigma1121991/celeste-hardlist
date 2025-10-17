@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "../prisma"
 import { requireAuth } from "../auth-utils"
 
-export async function updatePlayerBio(bio: string) {
+export async function updatePlayerBio(bio: string, pronouns: string, inputMethod: string) {
   try {
     const session = await requireAuth()
 
@@ -12,6 +12,10 @@ export async function updatePlayerBio(bio: string) {
     const player = await prisma.player.findUnique({
       where: { userId: session.user.id },
       select: { id: true, handle: true },
+    })
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, pronouns: true, inputMethod: true },
     })
 
     if (!player) {
@@ -28,11 +32,29 @@ export async function updatePlayerBio(bio: string) {
         error: "Bio must be 500 characters or less" 
       }
     }
-
+    // Validate pronouns length
+    if (pronouns.length > 32) {
+      return { 
+        success: false, 
+        error: "Pronouns must be 32 characters or less" 
+      }
+    }
+    if (inputMethod.length > 100) {
+      return { 
+        success: false, 
+        error: "Input method must be 100 characters or less" 
+      }
+    }
+    // Validate input method
     // Update player bio
     await prisma.player.update({
       where: { id: player.id },
       data: { bio },
+    })
+    
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { pronouns, inputMethod },
     })
 
     revalidatePath(`/players/${player.handle}`)
@@ -44,6 +66,8 @@ export async function updatePlayerBio(bio: string) {
     return { success: false, error: "Failed to update bio" }
   }
 }
+
+
 
 export async function updatePlayerSocials(data: {
   youtubeUrl?: string

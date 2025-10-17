@@ -39,6 +39,10 @@ export default async function AccountSettingsPage() {
       discordHandle: true,
     },
   })
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, pronouns: true, inputMethod: true },
+  })
 
   if (!player) {
     redirect('/auth/claim-player')
@@ -56,7 +60,7 @@ export default async function AccountSettingsPage() {
       </div>
 
       <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded-lg p-6">
-        <div className="mb-6 pb-6 border-b border-[var(--border)]">
+        <div className="mb-6">
           <h2 className="text-xl font-semibold text-[var(--foreground)] mb-2">
             Player Profile
           </h2>
@@ -65,7 +69,7 @@ export default async function AccountSettingsPage() {
           </p>
         </div>
 
-        <SettingsForm player={player} />
+        <SettingsForm player={player} user={user || { pronouns: null, inputMethod: null }} />
       </div>
     </div>
   )

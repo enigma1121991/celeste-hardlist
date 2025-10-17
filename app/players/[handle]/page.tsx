@@ -23,23 +23,23 @@ export async function generateMetadata({params}: { params: { handle: string }}):
     .filter(run => run.map.stars && run.map.stars > 0)
     .sort((a, b) => (b.map.stars || 0) - (a.map.stars || 0))[0]
 
-    // if (!hardestClear) {
-    //   return {
-    //     title: `${player.handle} - Profile - Hard Clears`,
-    //     description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
-    //     openGraph: {
-    //       title: `${player.handle} - Profile - Hard Clears`,
-    //       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
-    //       type: 'profile',
-    //       url: `https://hardclears.com/players/${player.handle}`,
-    //     },
-    //     twitter: {
-    //       card: 'summary',
-    //       title: `${player.handle} - Profile - Hard Clears`,
-    //       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
-    //     },
-    //   }
-    // }
+    if (!hardestClear) {
+      return {
+        title: `${player.handle} - Profile - Hard Clears`,
+        description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+        openGraph: {
+          title: `${player.handle} - Profile - Hard Clears`,
+          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+          type: 'profile',
+          url: `https://hardclears.com/players/${player.handle}`,
+        },
+        twitter: {
+          card: 'summary',
+          title: `${player.handle} - Profile - Hard Clears`,
+          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+        },
+      }
+    }
 
   return {
     title: `${player.handle} - Profile - Hard Clears`,
@@ -124,7 +124,7 @@ export default async function PlayerPage({
   return (
     <div className="max-w-6xl mx-auto space-y-8 px-4 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-6">
+      <div className="bg-[var(--background-elevated)] border border-[var(--border)] rounded p-6 relative">
         <div className="flex justify-between items-center gap-4">
           <div className="flex flex-1 items-center h-full">
             <div className="flex items-center gap-3 flex-wrap">
@@ -137,47 +137,17 @@ export default async function PlayerPage({
                     className="rounded-full"
                 ></Image>
               )}
-              <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">{player.handle}</h1>
+              <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">
+                {player.handle}
+                {player.user?.pronouns && (
+                  <span className="text-lg font-normal text-[var(--foreground-muted)] ml-3 mr-1">
+                  • &nbsp;&nbsp;{player.user.pronouns}
+                </span>
+                )}
+              </h1> 
               {player.user && <RoleBadge role={player.user.role} size="md" />}
               
-              {/* Social Links - inline */}
-              {player.youtubeUrl && (
-                <a
-                  href={
-                    player.youtubeUrl.startsWith('http')
-                    ? player.youtubeUrl
-                    : `https://${player.youtubeUrl}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2 py-1.5 bg-[#FF0000] border border-[#FF0000] text-white rounded text-sm font-medium hover:bg-[#CC0000] transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                  
-                </a>
-              )}
-              {player.twitchUrl && (
-                <a
-                  href={
-                    player.twitchUrl.startsWith('http')
-                    ? player.twitchUrl
-                    : `https://${player.twitchUrl}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2 py-1.5 bg-[#9146FF] border border-[#9146FF] text-white rounded text-sm font-medium hover:bg-[#772CE8] transition-colors flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-                  </svg>
-                  
-                </a>
-              )}
-              {player.user?.name && (
-                <DiscordTag tag={player.user.name} />
-              )}
+              
             </div>
           </div>
 
@@ -207,9 +177,57 @@ export default async function PlayerPage({
             </div>
         </div>
         {player.bio && (
-            <p className="text-[var(--foreground-muted)] mt-2 max-w-2xl">
+            <p className="text-[var(--foreground-muted)] mt-3 max-w-2xl whitespace-pre-wrap">
             {player.bio}
             </p>
+        )}
+        {player.user?.inputMethod && (
+          <div className="mt-3 flex items-center gap-2">
+            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-[var(--background-hover)] text-[var(--foreground-muted)]">
+              Input Method: {player.user.inputMethod}
+            </span>
+          </div>
+        )}
+
+        {/* Social Links - bottom right (absolute positioned) */}
+        {(player.youtubeUrl || player.twitchUrl || player.user?.name) && (
+          <div className="absolute bottom-4 right-4 flex items-center gap-2">
+            {player.youtubeUrl && (
+              <a
+                href={
+                  player.youtubeUrl.startsWith('http')
+                  ? player.youtubeUrl
+                  : `https://${player.youtubeUrl}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2 py-1.5 bg-[#FF0000] border border-[#FF0000] text-white rounded text-sm font-medium hover:bg-[#CC0000] transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+            )}
+            {player.twitchUrl && (
+              <a
+                href={
+                  player.twitchUrl.startsWith('http')
+                  ? player.twitchUrl
+                  : `https://${player.twitchUrl}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-2 py-1.5 bg-[#9146FF] border border-[#9146FF] text-white rounded text-sm font-medium hover:bg-[#772CE8] transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                </svg>
+              </a>
+            )}
+            {player.user?.name && (
+              <DiscordTag tag={player.user.name} />
+            )}
+          </div>
         )}
       </div>
 
