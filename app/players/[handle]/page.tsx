@@ -140,7 +140,7 @@ export default async function PlayerPage({
               <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">
                 {player.handle}
                 {player.user?.pronouns && (
-                  <span className="text-lg font-normal text-[var(--foreground-muted)] ml-3 mr-1">
+                  <span className="text-lg font-normal text-[var(--foreground-muted)] ml-3 mr-1 align-middle">
                   • &nbsp;&nbsp;{player.user.pronouns}
                 </span>
                 )}
