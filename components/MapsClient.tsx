@@ -31,6 +31,21 @@ export default function MapsClient({ initialMaps, creators, tags }: MapsClientPr
     return () => clearTimeout(timer)
   }, [])
 
+  // Listen for reset filters event from navbar
+  useEffect(() => {
+    const handleResetFilters = () => {
+      setFilters({
+        search: '',
+        stars: [],
+        creator: '',
+        tags: [],
+      })
+    }
+
+    window.addEventListener('resetFilters', handleResetFilters)
+    return () => window.removeEventListener('resetFilters', handleResetFilters)
+  }, [])
+
   useEffect(() => {
     let result = [...initialMaps]
 

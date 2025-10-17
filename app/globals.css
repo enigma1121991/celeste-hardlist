@@ -98,9 +98,34 @@ body {
   background: var(--border-hover);
 }
 
-.border-gradient-nav {
+.border-gradient-nav-old {
     border-image: linear-gradient(90deg, #9900ff 0%, #ff39d2 10%, #fe496a 20%, #ff5435 30%, #FFFF32 40%, #32FF32 50%, 
                                 #32FFA0 60%, #83FFE9 70%, #83FFE9 80%, #4058FC 90%, #8E6EEA 100%) 30;
     border-width: 0 0 2px 0;
     border-style: solid;
+}
+
+.rainbow-border {
+    position: relative;
+}
+
+.rainbow-border::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #9900ff, #ff39d2, #fe496a, #ff5435, #FFFF32, #32FF32, #32FFA0, #83FFE9, #4058FC, #8E6EEA, #9900ff);
+    background-size: 200% 100%;
+    animation: rainbow-flow 10s linear infinite;
+}
+
+@keyframes rainbow-flow {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 200% 50%;
+    }
 }

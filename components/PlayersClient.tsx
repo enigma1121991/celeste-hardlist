@@ -30,6 +30,21 @@ export default function PlayersClient({ initialPlayers, totalCount }: PlayersCli
     return () => clearTimeout(timer)
   }, [])
 
+  // Listen for reset filters event from navbar
+  useEffect(() => {
+    const handleResetFilters = () => {
+      setSearch('')
+      setSearchMode(false)
+      setSearchResults([])
+      setPage(1)
+      setPlayers(initialPlayers)
+      setHasMore(initialPlayers.length < totalCount)
+    }
+
+    window.addEventListener('resetFilters', handleResetFilters)
+    return () => window.removeEventListener('resetFilters', handleResetFilters)
+  }, [initialPlayers, totalCount])
+
   // Search all players in database
   const handleSearch = async () => {
     if (!search.trim()) {

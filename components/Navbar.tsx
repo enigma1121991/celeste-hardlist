@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import {useRouter, usePathname } from 'next/navigation' 
 import { useState, useEffect } from 'react'
 import { useSession, signIn } from 'next-auth/react'
 import UserDropdown from './UserDropdown'
@@ -10,10 +10,12 @@ import { canVerify } from '@/lib/auth-utils'
 
 export default function Navbar() {
   const pathname = usePathname()
+  const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [pendingClearCount, setPendingClearCount] = useState(0)
   const [pendingClaimCount, setPendingClaimCount] = useState(0)
   const [playerHandle, setPlayerHandle] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   const { data: session, status } = useSession()
 
   const navLinks = [
@@ -23,6 +25,66 @@ export default function Navbar() {
     { href: '/rules', label: 'Rules' },
     { href: '/proposals', label: 'Proposals' },
   ]
+
+  const handleNavClick = (href: string) => {
+    // Start loading animation for all navigation
+    setIsLoading(true)
+    
+    if (pathname === href) {
+      // If already on the page, reset filters without full refresh
+      console.log('Resetting filters')
+      
+      // Dispatch custom event to reset filters on the current page
+      window.dispatchEvent(new CustomEvent('resetFilters'))
+      
+      // Use Web Animations API for smooth speed transition
+      const el = document.querySelector('.rainbow-border')
+      if (el) {
+        // Get the ::after animation
+        const [anim] = el.getAnimations({ subtree: true }).filter(a => a.animationName === 'rainbow-flow')
+        
+        if (anim) {
+          const start = anim.playbackRate || 1
+          const fastSpeed = 20 // Target fast speed
+          const normalSpeed = 1 
+          const totalDuration = 3000 
+          const accelerationDuration = 200 
+          const decelerationDuration = totalDuration - accelerationDuration 
+          const t0 = performance.now()
+          
+          function tick(t: number) {
+            const elapsed = t - t0
+            let currentSpeed
+            
+            if (elapsed < accelerationDuration) {
+              const k = elapsed / accelerationDuration
+              const e = 1 - Math.pow(1 - k, 3) 
+              currentSpeed = start + (fastSpeed - start) * e
+            } else {
+              const k = (elapsed - accelerationDuration) / decelerationDuration
+              const e = 1 - Math.pow(1 - k, 3) 
+              currentSpeed = fastSpeed + (normalSpeed - fastSpeed) * e
+            }
+            
+            anim.playbackRate = currentSpeed
+            
+            if (elapsed < totalDuration) {
+              requestAnimationFrame(tick)
+            } else {
+              setIsLoading(false)
+            }
+          }
+          requestAnimationFrame(tick)
+        } else {
+          setTimeout(() => setIsLoading(false), 3000)
+        }
+      } else {
+        setTimeout(() => setIsLoading(false), 3000)
+      }
+    } else {
+      router.push(href)
+    }
+  }
 
   useEffect(() => {
     // Fetch pending clear count if user can verify
@@ -74,8 +136,18 @@ export default function Navbar() {
     }
   }, [session])
 
+  // Reset loading state when pathname changes (navigation completed)
+  useEffect(() => {
+    // Add a small delay to allow the page to fully load before resetting
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 100)
+    
+    return () => clearTimeout(timer)
+  }, [pathname])
+
   return (
-    <nav className="fixed w-full z-[100] bg-[var(--background-elevated)] border-gradient-nav">
+    <nav className={`fixed w-full z-[100] bg-[var(--background-elevated)] rainbow-border ${isLoading ? 'loading' : ''}`}>
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-14">
           {/* Logo */}
@@ -89,17 +161,17 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             <div className="flex space-x-1">
               {navLinks.map((link) => (
-                <Link
+                <button
                   key={link.href}
-                  href={link.href}
-                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
+                  onClick={() => handleNavClick(link.href)}
+                  className={`px-3 py-1.5 rounded text-sm font-medium transition-colors cursor-pointer ${
                     pathname === link.href
                       ? 'bg-[var(--background-hover)] text-[var(--foreground)]'
                       : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-hover)]'
                   }`}
                 >
                   {link.label}
-                </Link>
+                </button>
               ))}
             </div>
 
@@ -152,18 +224,20 @@ export default function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden pb-3 border-t border-[var(--border)] pt-3 mt-1 space-y-1">
             {navLinks.map((link) => (
-              <Link
+              <button
                 key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block px-3 py-2 rounded text-sm font-medium ${
+                onClick={() => {
+                  handleNavClick(link.href)
+                  setMobileMenuOpen(false)
+                }}
+                className={`block w-full text-left px-3 py-2 rounded text-sm font-medium cursor-pointer ${
                   pathname === link.href
                     ? 'bg-[var(--background-hover)] text-[var(--foreground)]'
                     : 'text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--background-hover)]'
                 }`}
               >
                 {link.label}
-              </Link>
+              </button>
             ))}
             
             {/* Mobile Auth UI */}

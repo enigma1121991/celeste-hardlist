@@ -31,6 +31,21 @@ export default function FilterSidebar({
     onFilterChange(filters)
   }, [filters, onFilterChange])
 
+  // Listen for reset filters event from navbar
+  useEffect(() => {
+    const handleResetFilters = () => {
+      setFilters({
+        search: '',
+        stars: [],
+        creator: '',
+        tags: [],
+      })
+    }
+
+    window.addEventListener('resetFilters', handleResetFilters)
+    return () => window.removeEventListener('resetFilters', handleResetFilters)
+  }, [])
+
   const updateFilter = (key: keyof FilterState, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
