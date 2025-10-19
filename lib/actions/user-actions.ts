@@ -108,7 +108,7 @@ export async function updatePlayerSocials(data: {
   }
 }
 
-export async function updatePlayerNationality(countryCode: string) {
+export async function updatePlayerNationality(countryCode: string | null) {
     try {
         const session = await requireAuth()
 
@@ -124,11 +124,14 @@ export async function updatePlayerNationality(countryCode: string) {
             }
         }
 
+        const normalized = countryCode?.trim() ?? ""
+        const normalizedUpper = normalized === "" ? null : normalized.toUpperCase()
+
         // Update nationality
         await prisma.user.update({
-            where: { id: player.id },
+            where: { id: session.user.id },
             data: {
-                countryCode
+                countryCode: normalizedUpper,
             },
         })
 

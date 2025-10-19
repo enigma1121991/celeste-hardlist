@@ -48,7 +48,6 @@ export async function GET(request: Request) {
         : [{ _count: { runs: "desc" } as any }, { handle: "asc" }];
 
 
-    // Search all players by handle (case-insensitive)
     const players = await prisma.player.findMany({
       where,
         include: {
