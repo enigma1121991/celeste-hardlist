@@ -35,6 +35,7 @@ export async function getPlayerByHandle(handle: string) {
           role: true,
           image: true,
           name: true,
+          discordUsername: true,
           pronouns: true,
           inputMethod: true,
           countryCode: true,

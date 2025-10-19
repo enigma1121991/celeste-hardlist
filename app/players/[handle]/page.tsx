@@ -141,14 +141,14 @@ export default async function PlayerPage({
                     className="rounded-full"
                 ></Image>
               )}
-              <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">
+              <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight flex items-center">
                 {player.handle}
                 {player.user?.pronouns && (
-                  <span className="text-lg font-normal text-[var(--foreground-muted)] ml-3 mr-1 align-middle">
+                  <span className="text-lg font-normal text-[var(--foreground-muted)] ml-3 align-middle">
                   • &nbsp;&nbsp;{player.user.pronouns}
                   </span>)}
-                {player.user?.countryCode && (<TwemojiFlag code={player.user.countryCode} />)}
               </h1> 
+              {player.user?.countryCode && (<TwemojiFlag code={player.user.countryCode} />)}
               {player.user && <RoleBadge role={player.user.role} size="md" />}
             </div>
           </div>
@@ -231,7 +231,7 @@ export default async function PlayerPage({
               </a>
             )}
             {player.user?.name && (
-              <DiscordTag tag={player.user.name} />
+              <DiscordTag tag={player.user.discordUsername} />
             )}
           </div>
         )}
