@@ -125,7 +125,7 @@ export async function updatePlayerNationality(countryCode: string) {
         }
 
         // Update nationality
-        await prisma.player.update({
+        await prisma.user.update({
             where: { id: player.id },
             data: {
                 countryCode
