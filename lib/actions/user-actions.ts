@@ -67,8 +67,6 @@ export async function updatePlayerBio(bio: string, pronouns: string, inputMethod
   }
 }
 
-
-
 export async function updatePlayerSocials(data: {
   youtubeUrl?: string
   twitchUrl?: string
@@ -110,6 +108,36 @@ export async function updatePlayerSocials(data: {
   }
 }
 
+export async function updatePlayerNationality(countryCode: string) {
+    try {
+        const session = await requireAuth()
 
+        const player = await prisma.player.findUnique({
+            where: { userId: session.user.id },
+            select: { id: true, handle: true },
+        })
 
+        if (!player) {
+            return { 
+                success: false, 
+                error: "You must claim a player profile first" 
+            }
+        }
 
+        // Update nationality
+        await prisma.player.update({
+            where: { id: player.id },
+            data: {
+                countryCode
+            },
+        })
+
+        revalidatePath(`/players/${player.handle}`)
+        revalidatePath("/account/settings")
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error updating nationality:", error)
+        return { success: false, error: "Failed to update social links" }
+    }
+}

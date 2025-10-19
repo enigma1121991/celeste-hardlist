@@ -8,9 +8,7 @@ export async function GET() {
         id: true,
         handle: true,
       },
-      orderBy: {
-        handle: 'asc',
-      },
+      orderBy: [{ runs: { _count: 'desc' } as any }, { handle: 'asc' }]
     })
 
     return NextResponse.json(players)
@@ -22,7 +20,3 @@ export async function GET() {
     )
   }
 }
-
-
-
-

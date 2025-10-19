@@ -2,13 +2,13 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getPlayerByHandle, calculatePlayerStats, getPlayers, calculateWeightedStarScore } from '@/lib/players'
-import PlayerBadge from '@/components/PlayerBadge'
 import RoleBadge from '@/components/RoleBadge'
 import DiscordTag from '@/components/DiscordTag'
 import { RUN_TYPE_LABELS } from '@/lib/types'
 import { getYouTubeThumbnailFromUrl, getYouTubeEmbedUrl } from '@/lib/youtube'
 import { Metadata } from 'next'
 import { getStarColor } from "@/components/utils/colors"
+import { TwemojiFlag } from "@/components/utils/country"
 
 export async function generateMetadata({params}: { params: { handle: string }}): Promise<Metadata> {
   const player = await getPlayerByHandle(decodeURIComponent(params.handle))
@@ -26,17 +26,17 @@ export async function generateMetadata({params}: { params: { handle: string }}):
     if (!hardestClear) {
       return {
         title: `${player.handle} - Profile - Hard Clears`,
-        description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+        description: `${player.handle}'s player profile. `,
         openGraph: {
           title: `${player.handle} - Profile - Hard Clears`,
-          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+          description: `${player.handle}'s player profile. `,
           type: 'profile',
           url: `https://hardclears.com/players/${player.handle}`,
         },
         twitter: {
           card: 'summary',
           title: `${player.handle} - Profile - Hard Clears`,
-          description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears.`,
+          description: `${player.handle}'s player profile. `,
         },
       }
     }
@@ -49,13 +49,13 @@ export async function generateMetadata({params}: { params: { handle: string }}):
       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear: ${hardestClear.map.stars}★`,
       type: 'profile',
       url: `https://hardclears.com/players/${player.handle}`,
-      images: [{url: "/metadata-image.png", width: 256, height: 256}],
+      images: [{url: `${player.user?.image || "/metadata-image.png"}`, width: 256, height: 256}],
     },
     twitter: {
       card: 'summary',
       title: `${player.handle} - Profile - Hard Clears`,
       description: `${player.handle}'s player profile. ${stats.totalClears} Total Clears. Hardest Clear: ${hardestClear.map.stars}★`,
-      images: [{url: "/metadata-image.png", width: 256, height: 256}],
+      images: [{url: `${player.user?.image || "/metadata-image.png"}`, width: 256, height: 256}],
     },
   }
 }
@@ -105,7 +105,7 @@ export default async function PlayerPage({
     rank++
   }
   
-  const playerRank = currentRank
+  // const playerRank = currentRank
 
   // Get hardest clears (sorted by star rating)
   const hardestClears = [...player.runs]
@@ -146,12 +146,10 @@ export default async function PlayerPage({
                 {player.user?.pronouns && (
                   <span className="text-lg font-normal text-[var(--foreground-muted)] ml-3 mr-1 align-middle">
                   • &nbsp;&nbsp;{player.user.pronouns}
-                </span>
-                )}
+                  </span>)}
+                {player.user?.countryCode && (<TwemojiFlag code={player.user.countryCode} />)}
               </h1> 
               {player.user && <RoleBadge role={player.user.role} size="md" />}
-              
-              
             </div>
           </div>
 
@@ -237,24 +235,6 @@ export default async function PlayerPage({
             )}
           </div>
         )}
-      </div>
-
-      {/* Badges/Stats Dashboard */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4 text-[var(--foreground)]">Clear Statistics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <PlayerBadge type="FULL_CLEAR_VIDEO" count={stats.fullClearWithVideo} />
-          <PlayerBadge type="FULL_CLEAR" count={stats.fullClear} />
-          <PlayerBadge type="CLEAR_VIDEO" count={stats.clearWithVideo} />
-          <PlayerBadge type="CLEAR" count={stats.clear} />
-          <PlayerBadge type="FULL_CLEAR_GB" count={stats.fullClearGB} />
-          <PlayerBadge type="CLEAR_GB" count={stats.clearGB} />
-          <PlayerBadge type="CREATOR_CLEAR" count={stats.creatorClear} />
-          <PlayerBadge
-            type="ALL_DEATHLESS_SEGMENTS"
-            count={stats.allDeathlessSegments}
-          />
-        </div>
       </div>
 
       {/* Hardest Clears */}
@@ -494,4 +474,3 @@ export default async function PlayerPage({
     </div>
   )
 }
-

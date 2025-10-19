@@ -31,30 +31,41 @@ export default async function PlayersPage() {
   // Load first page of players with limited run data for performance
   // Note: We fetch all players to sort by run count, then take first page
   // This is necessary because Prisma doesn't support ordering by relation count with pagination
-  const allPlayers = await prisma.player.findMany({
-    include: {
-      runs: {
-        where: {
-          verifiedStatus: 'VERIFIED',
+const [players, totalCount] = await prisma.$transaction([
+    prisma.player.findMany({
+      take: pageSize, // Only fetch the first page
+      orderBy: [
+        { runs: { _count: 'desc' } as any }, // Default sort
+        { handle: 'asc' },
+      ],
+      include: {
+        _count: {
+          select: { runs: true },
         },
-        include: {
-          map: {
-            select: {
-              stars: true,
+        runs: {
+          where: {
+            verifiedStatus: 'VERIFIED',
+          },
+          include: {
+            map: {
+              select: {
+                stars: true,
+              },
             },
           },
         },
-      },
-      user: {
-        select: {
-          id: true,
-          role: true,
-          image: true,
+        user: {
+          select: {
+            id: true,
+            role: true,
+            image: true,
+            name: true,
+          },
         },
       },
-    },
-  })
-  const sortedPlayers = allPlayers.sort((a: any, b: any) => b.runs.length - a.runs.length)
+    }),
+    prisma.player.count()
+  ])
 
   // Sort by number of clears (descending), then take first page
   /*const sortedPlayers = allPlayers.sort((a: any, b: any) => {
@@ -62,9 +73,6 @@ export default async function PlayersPage() {
     const scoreB = calculateWeightedStarScore(b.runs)
     return scoreB - scoreA
   })*/
- const players = sortedPlayers.slice(0, pageSize)
-
-  const totalCount = await prisma.player.count()
 
   return <PlayersClient initialPlayers={players} totalCount={totalCount} />
 }

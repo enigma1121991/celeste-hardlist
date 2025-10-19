@@ -1,11 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { updatePlayerBio, updatePlayerSocials } from '@/lib/actions/user-actions'
+import React, { useState } from 'react'
+import CountrySelect from "@/components/CountrySelect";
+import { TwemojiFlag } from "@/components/utils/country";
+import { updatePlayerBio, updatePlayerSocials, updatePlayerNationality } from '@/lib/actions/user-actions'
 
 interface SettingsFormProps {
   player: {
     bio: string | null
+    countryCode: string | null
     youtubeUrl: string | null
     twitchUrl: string | null
     discordHandle: string | null
@@ -18,6 +21,7 @@ interface SettingsFormProps {
 
 export default function SettingsForm({ player, user }: SettingsFormProps) {
   const [bio, setBio] = useState(player.bio || '')
+  const [countryCode, setCountryCode] = useState(player.countryCode || '')
   const [pronouns, setPronouns] = useState(user.pronouns || '')
   const [inputMethod, setInputMethod] = useState(user.inputMethod || '')
   const [youtubeUrl, setYoutubeUrl] = useState(player.youtubeUrl || '')
@@ -83,6 +87,26 @@ export default function SettingsForm({ player, user }: SettingsFormProps) {
     }
   }
 
+  const handleSaveNationality = async () => {
+    setLoading(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const result = await updatePlayerNationality(countryCode)
+      if (result.success) {
+        setSuccess('Nationality updated successfully!')
+      } else {
+        setError(result.error || 'Failed to update nationality')
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
       {error && (
@@ -123,6 +147,37 @@ export default function SettingsForm({ player, user }: SettingsFormProps) {
               </div>
             </div>
           </div>
+          
+            {/* Country Flag Section */}
+            <div>
+                <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">Nationality</h3>
+                <p className="text-sm text-[var(--foreground-muted)] mb-3">Select your country's flag</p>
+                <div className="flex flex-col md:flex-row md:items-center md:gap-4">
+                <div className="w-full md:w-56">
+                    <CountrySelect onChange={(code) => setCountryCode(code)} />
+                </div>
+                <div className="mt-3 md:mt-0 flex items-center gap-3">
+                    {countryCode ? (
+                    <>
+                        <TwemojiFlag code={countryCode} />
+                        <span className="text-sm text-[var(--foreground)]">{countryCode.toUpperCase()}</span>
+                    </>
+                    ) : (
+                        <span className="text-sm text-[var(--foreground-muted)]">No country selected</span>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex justify-between items-center mt-4">
+                <button
+                    onClick={handleSaveNationality}
+                    disabled={loading}
+                    className="px-4 py-2 bg-white text-black border border-gray-300 rounded font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? "Saving..." : "Save Nationality"}
+                </button>
+            </div>
+        </div>
 
           {/* Pronouns and Input Method  */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
