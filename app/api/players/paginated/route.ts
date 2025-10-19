@@ -100,8 +100,7 @@ export async function GET(request: Request) {
       return scoreB - scoreA
     })*/
     const players = filteredPlayers.slice(skip, skip + pageSize)
-
-    const hasMore = skip + filteredPlayers.length < totalCount
+    const hasMore = filteredPlayers.length > skip + pageSize
 
     return NextResponse.json({
       players,

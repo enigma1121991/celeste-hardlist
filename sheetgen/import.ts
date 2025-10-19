@@ -95,6 +95,9 @@ function parseRow(
     console.warn(`   ⚠️  Could not parse map/creator from: "${mapCreatorCell}"`)
     return null
   }
+  if (parsed.mapName === "# of Challenges / People / Clears") {
+    return null;
+  }
   const videoCell = row[3]?.trim() || ''
   const urls = videoCell ? extractAllUrls(videoCell) : []
   const canonicalVideoUrl = urls.length > 0 ? urls[0] : null
@@ -249,7 +252,6 @@ async function runImport() {
     }
   }
   if (skippedRows.length > 0) console.log(`   Skipped ${skippedRows.length} header/summary rows`)
-  if (parsedRows.length > 0) parsedRows.pop(); // # challenges or something
   console.log(`   Parsed ${parsedRows.length} valid map rows`)
   console.log('')
   console.log(dryRun ? 'DRY RUN - Analyzing differences (no changes will be made)...' : 'Analyzing differences with database...')
@@ -442,8 +444,8 @@ async function runImport() {
     const existingForPair = runIndex.get(key)?.items ?? []
     var epochDate = new Date(0);
     if (evidenceUrls) {
-        // epochDate = await getRunDate(evidenceUrls[0] || "")
-        epochDate = new Date(0)
+        epochDate = await getRunDate(evidenceUrls[0] || "")
+        // epochDate = new Date(0)
     }
     if (existingForPair.length === 0) {
       toCreate.push({ mapId, playerId, type, evidenceUrls, verifiedStatus, createdAt: epochDate })

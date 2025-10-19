@@ -31,6 +31,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
   const [searchPage, setSearchPage] = useState(1);
   const [searchHasMore, setSearchHasMore] = useState(false);
   const [country, setCountry] = useState<string | null>(null);
+  const [hardest, setHardest] = useState(false);
 
   // Hide initial loading animation after short delay
   useEffect(() => {
@@ -57,13 +58,11 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
     setSelectedStars((prev) => (prev.includes(n) ? prev.filter((x) => x !== n) : [...prev, n]));
   };
 
-  const [hardest, setHardest] = useState(false);
-
-  const buildUrl = ({ q, page, perPage, stars, sort, hardest, country }: { q?: string; page?: number; perPage?: number; stars?: number[], sort?: string, hardest?: boolean, country?: string }) => {
+  const buildUrl = ({ q, page, perPage, stars, sort, hardest, country }: { q?: string; page?: number; perPage?: number; stars?: number[], sort?: string, hardest?: boolean, country?: string | null }) => {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
-    if (page) params.set("page", String(page));
-    if (perPage) params.set("perPage", String(perPage));
+    if (page !== undefined && page !== null) params.set("page", String(page))
+    if (perPage !== undefined && perPage !== null) params.set("perPage", String(perPage));
     if (stars && stars.length > 0) params.set("stars", stars.join(","));
     if (sort) params.set("sort", sort);
     if (hardest) params.set("hardest", String(hardest));
@@ -128,7 +127,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
   const fetchSortedPlayers = async () => {
     setLoading(true);
     try {
-      const url = buildUrl({ page: 1, perPage: 50, sort: sortBy });
+      const url = buildUrl({ page: 1, perPage: 50, sort: sortBy, country, hardest });
       const res = await fetch(url);
       const data = await res.json();
       if (res.ok) {
@@ -146,7 +145,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
   };
 
   fetchSortedPlayers();
-}, [sortBy, searchMode]);
+}, [sortBy, searchMode, country, hardest]);
 
   // Load more for both normal and search modes (preserves filters when in search)
   const loadMore = async () => {
@@ -157,7 +156,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
       const next = searchPage + 1;
       setLoading(true);
       try {
-        const url = buildUrl({ q: search.trim() || undefined, page: next, perPage: 50, stars: selectedStars, sort: sortBy });
+        const url = buildUrl({ q: search.trim() || undefined, page: next, perPage: 50, stars: selectedStars, sort: sortBy, hardest, country });
         const res = await fetch(url);
         const data = await res.json();
         if (res.ok) {
@@ -178,7 +177,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
       const next = page + 1;
       setLoading(true);
       try {
-        const url = buildUrl({ page: next, perPage: 50, sort: sortBy });
+        const url = buildUrl({ page: next, perPage: 50, sort: sortBy, hardest, country });
         const res = await fetch(url);
         const data = await res.json();
         if (res.ok) {
@@ -197,7 +196,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
     }
   };
 
-  // Infinite scroll for normal listing only (preserve previous behavior)
+  // Infinite scroll
   useEffect(() => {
     if (searchMode) return; // don't infinite-scroll during search
     const onScroll = () => {
@@ -211,7 +210,7 @@ export default function PlayersClient({ initialPlayers, totalCount: initialTotal
     };
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
-  }, [loading, hasMore, page, searchMode]);
+  }, [loading, hasMore, page, searchMode, country, hardest, sortBy]);
 
   // Build display list (use search results when in search mode, else normal players)
   const displayPlayers = searchMode ? searchResults : players;
