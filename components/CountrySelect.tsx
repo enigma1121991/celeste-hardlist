@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { getData } from "country-list";
+import { countries, getCountryCode } from "countries-list";
 import { TwemojiFlag } from "@/components/utils/country";
 
 type Country = { code: string; name: string };
@@ -12,7 +12,13 @@ interface CountrySelectProps {
 }
 
 export default function CountrySelect({ value, onChange }: CountrySelectProps) {
-  const allCountries = useMemo(() => getData() as Country[], []);
+  const allCountries = useMemo(() => {
+    return Object.entries(countries).map(([code, data]) => ({
+      code,
+      name: data.name,
+    })) as Country[];
+  }, []);
+  
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(value ?? null);
